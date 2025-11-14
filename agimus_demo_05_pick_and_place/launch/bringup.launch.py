@@ -168,7 +168,7 @@ def launch_setup(
     elif vision_type in ["simulate_apriltag_det", "apriltag_det"]:
         apriltag_tf_to_world_pose_pub = Node(
             package="olt_ros2_pipeline",
-            executable="apriltag_tf_to_world_pose",
+            executable="apriltag_tf_to_world",
             name="detection_pub_node",
             parameters=[get_use_sim_time()],
             output="screen",
