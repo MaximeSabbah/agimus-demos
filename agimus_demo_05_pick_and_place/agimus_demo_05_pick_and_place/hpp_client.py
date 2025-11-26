@@ -368,6 +368,11 @@ class HPPInterface:
             + self.default_obstacle2_pose
         )
 
+        self.vf.createViewer()
+        self.robot.setCurrentConfig(self.q_init)
+        input("Investigate the pose in gepetto-gui")
+
+
         self._build_bin_picking(
             enable_collision_between_box_and_part,
             only_free_node=False,
