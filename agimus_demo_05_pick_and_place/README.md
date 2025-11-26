@@ -55,6 +55,34 @@ ros2 launch olt_ros2_pipeline realsense_apriltag.launch.py
 ros2 launch agimus_demo_05_pick_and_place bringup.launch.py arm_id:=fer vision_type:=apriltag_det robot_ip:=172.17.1.3 aux_computer_ip:=panda2 aux_computer_user:=msabbah  use_ft_sensor:=false use_rviz:=true
 ```
 
+To start the demo (dual setup + happypose for tless) :
+
+In vision_cuda docker: 
+
+Don't forget to add the preparation of the meshes: 
+
+```bash
+ros2 run m3t_tracker_ros prepare_sparse_views         --input-path $HAPPYPOSE_DATA_DIR/bop_datasets/tless/models_cad         --output-path $M3T_DATA_DIR         --use-depth
+```
+
+```bash
+ros2 launch olt_ros2_pipeline happypose.launch.py dataset_name:=tless model_type:=pbr
+```
+
+```bash
+ros2 launch olt_ros2_pipeline separate_nodes_pipeline.launch.py m3t_data_dir:=$M3T_DATA_DIR
+```
+
+In control docker: 
+
+```bash
+gepetto-gui
+```
+
+```bash
+ros2 launch agimus_demo_05_pick_and_place bringup.launch.py arm_id:=fer vision_type:=apriltag_det robot_ip:=172.17.1.3 aux_computer_ip:=panda2 aux_computer_user:=msabbah  use_ft_sensor:=false use_rviz:=true
+```
+
 ## tips
 When hpp doesn't find a trajectory, looking at what the scene looks like for him in gepetto-gui is helpful, you can do that in the xterm terminal with
 `v = o.hpp_client.vf.createViewer()`
