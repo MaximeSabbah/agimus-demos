@@ -80,7 +80,7 @@ gepetto-gui
 ```
 
 ```bash
-ros2 launch agimus_demo_05_pick_and_place bringup.launch.py arm_id:=fer vision_type:=apriltag_det robot_ip:=172.17.1.3 aux_computer_ip:=panda2 aux_computer_user:=msabbah  use_ft_sensor:=false use_rviz:=true
+ros2 launch agimus_demo_05_pick_and_place bringup.launch.py arm_id:=fer vision_type:=happypose robot_ip:=172.17.1.3 aux_computer_ip:=panda2 aux_computer_user:=msabbah  use_ft_sensor:=false use_rviz:=true
 ```
 
 ## tips
