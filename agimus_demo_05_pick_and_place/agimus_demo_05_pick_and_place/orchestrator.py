@@ -94,8 +94,8 @@ def get_hardcoded_final_object_pose(object_name: str) -> list[float]:
         "obj_22",
         "obj_23",
     ]:
-        return "dest_box/base_link", [0.4, -0.55, 0.075, 0.0, 0.0, 0.0, 1.0]
-        # return "dest_box/base_link", [0.1, 0.0, 0.03, 0.0, 0.0, 0.0, 1.0]
+        # return "dest_box/base_link", [0.4, -0.55, 0.075, 0.0, 0.0, 0.0, 1.0]
+        return "dest_box/base_link", [0.1, 0.0, 0.13, 0.0, 0.0, 0.0, 1.0]
     elif object_name in ["obj_25", "obj_26"]:  # switches
         return "dest_box/base_link", [0.05, 0.0, 0.03, 0.0, 0.0, 0.0, 1.0]
     elif object_name == "obj_03":
@@ -219,14 +219,27 @@ class Orchestrator(object):
         # ]
 
         # Prague config
+        # self.q0_start = [
+        #     -0.07989926975547221,
+        #     0.16054953411490003,
+        #     -0.4331556367121411,
+        #     -1.6853466114741846,
+        #     0.040477269951448534,
+        #     1.866718797171213,
+        #     0.3947644127864415,
+        #     0.0,
+        #     0.0,
+        # ]
+
+        #LAAS 
         self.q0_start = [
-            -0.07989926975547221,
-            0.16054953411490003,
-            -0.4331556367121411,
-            -1.6853466114741846,
-            0.040477269951448534,
-            1.866718797171213,
-            0.3947644127864415,
+            0.1885708803377653,
+            -0.12201838282743906,
+            -0.4318538275591564,
+            -1.660018848663386,
+            0.04288099569413397,
+            1.673102326025706,
+            0.5036406116502152,
             0.0,
             0.0,
         ]
@@ -480,7 +493,7 @@ class Orchestrator(object):
             if enable_visualization_in_gepetto_gui:
                 # self.v = self.hpp_client.vf.createViewer()
                 self.hpp_client.v(self.hpp_client.q_init)
-                # input("Trajectory computed. Ready to move. Press Enter to start motion...")
+                input("Trajectory computed. Ready to move. Press Enter to start motion...")
 
             self.open_gripper()
             self.open_gripper()
