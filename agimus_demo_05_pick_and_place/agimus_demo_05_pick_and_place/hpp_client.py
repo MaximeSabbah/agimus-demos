@@ -96,6 +96,8 @@ class HPPInterface:
         urdf_string = (
             process_xacro(
                 package_location + "/urdf/demo.urdf.xacro",
+                "arm_id:=fer",
+                "ee_id:=franka_hand_with_camera",
                 "use_camera:=true",
             ).replace("file://", "")
             if robot_urdf_string == ""
@@ -225,8 +227,8 @@ class HPPInterface:
         # TODO: get link names automatically
         srdfString = '<robot name="demo">'
         for i in range(1, 8):
-            srdfString += f'<disable_collisions link1="panda_link{i}_sc" link2="{self.manip_object.name}/base_link" reason="handled otherwise"/>'
-        srdfString += f'<disable_collisions link1="panda_hand_sc" link2="{self.manip_object.name}/base_link" reason="handled otherwise"/>'
+            srdfString += f'<disable_collisions link1="fer_link{i}_sc" link2="{self.manip_object.name}/base_link" reason="handled otherwise"/>'
+        srdfString += f'<disable_collisions link1="fer_hand_sc" link2="{self.manip_object.name}/base_link" reason="handled otherwise"/>'
         srdfString += "</robot>"
         self.robot.client.manipulation.robot.insertRobotSRDFModelFromString(
             "panda", srdfString
@@ -234,10 +236,14 @@ class HPPInterface:
 
         # Lock gripper in open position.
         self.ps.createLockedJoint(
-            "locked_finger_1", "panda/fer_finger_joint1", [self.gripper_open_value]
+            "locked_finger_1",
+            "panda/fer_finger_joint1",
+            [self.gripper_open_value],
         )
         self.ps.createLockedJoint(
-            "locked_finger_2", "panda/fer_finger_joint2", [self.gripper_open_value]
+            "locked_finger_2",
+            "panda/fer_finger_joint2",
+            [self.gripper_open_value],
         )
         self.ps.setConstantRightHandSide("locked_finger_1", True)
         self.ps.setConstantRightHandSide("locked_finger_2", True)
