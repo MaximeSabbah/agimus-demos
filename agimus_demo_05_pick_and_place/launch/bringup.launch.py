@@ -6,6 +6,7 @@ from launch.actions import (
     ExecuteProcess,
     DeclareLaunchArgument,
 )
+from launch.conditions import IfCondition
 from launch.event_handlers import OnProcessExit
 from launch.launch_description_entity import LaunchDescriptionEntity
 from launch.substitutions import PathJoinSubstitution, LaunchConfiguration
@@ -53,6 +54,30 @@ def launch_setup(
         executable="wait_for_non_zero_joints_node",
         parameters=[get_use_sim_time()],
         output="screen",
+    )
+
+    # Spawn and activate the ros2_control gripper action controller in simulation.
+    use_gazebo = LaunchConfiguration("use_gazebo")
+    use_gazebo_bool = context.perform_substitution(use_gazebo).lower() == "true"
+    # Use a shell with `ros2 run` to avoid PATH resolution issues in launch.
+    # Robustly ensure the gripper action controller exists and is active.
+    gripper_ensure_active_cmd = ExecuteProcess(
+        cmd=[
+            "bash",
+            "-lc",
+            # Wait for controller_manager services
+            "for i in $(seq 1 120); do "
+            "  ros2 control list_controllers -c controller_manager >/dev/null 2>&1 && break; "
+            "  sleep 1; "
+            "done; "
+            # Try to load/configure/activate. Do not fail the whole launch if it cannot.
+            "ros2 control load_controller gripper_action_controller -c controller_manager >/dev/null 2>&1 || true; "
+            "ros2 control set_controller_state gripper_action_controller inactive -c controller_manager >/dev/null 2>&1 || true; "
+            "ros2 control set_controller_state gripper_action_controller active -c controller_manager || "
+            "(echo '[gripper] unable to activate gripper_action_controller (continuing)'; true)",
+        ],
+        output="screen",
+        condition=IfCondition(use_gazebo),
     )
     agimus_controller_node = Node(
         package="agimus_controller_ros",
@@ -144,8 +169,6 @@ def launch_setup(
     trajectory_weights_yaml = str(
         trajectory_weights_yaml / "config" / "trajectory_weigths_params.yaml"
     )
-    use_gazebo = LaunchConfiguration("use_gazebo")
-    use_gazebo_bool = context.perform_substitution(use_gazebo).lower() == "true"
     pick_and_place_node = ExecuteProcess(
         cmd=[
             "xterm",
@@ -165,6 +188,7 @@ def launch_setup(
             event_handler=OnProcessExit(
                 target_action=wait_for_non_zero_joints_node,
                 on_exit=[
+                    gripper_ensure_active_cmd,
                     agimus_controller_node,
                     happypose_to_tf_node,
                     pick_and_place_node,
