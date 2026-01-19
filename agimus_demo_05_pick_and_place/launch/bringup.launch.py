@@ -29,7 +29,13 @@ from agimus_demos_common.static_transform_publisher_node import (
 def launch_setup(
     context: LaunchContext, *args, **kwargs
 ) -> list[LaunchDescriptionEntity]:
-    franka_robot_launch = generate_include_launch("franka_common_lfc.launch.py")
+    franka_robot_launch = generate_include_launch(
+        "franka_common_lfc.launch.py",
+        extra_launch_arguments={
+            "ee_id": "franka_hand_with_camera",
+            "use_camera": "true",
+        },
+    )
     vision_type_arg = LaunchConfiguration("vision_type")
     vision_type = context.perform_substitution(vision_type_arg).lower()
     dataset_name_arg = LaunchConfiguration("dataset_name")
