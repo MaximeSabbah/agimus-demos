@@ -43,6 +43,9 @@ from agimus_demo_05_pick_and_place.utils import (
 )
 from hpp.rostools import process_xacro, retrieve_resource
 import pinocchio
+import rclpy
+from rcl_interfaces.msg import ParameterType
+from rcl_interfaces.srv import GetParameters
 
 
 XYZQuatType: T.TypeAlias = T.Tuple[float, float, float, float, float, float, float]
@@ -72,6 +75,10 @@ class HPPInterface:
         dataset_name: str = "tless",
         robot_urdf_string: str = "",
         robot_srdf_string: str = "",
+        ros_node: T.Optional["rclpy.node.Node"] = None,
+        robot_description_node_name: str = "robot_state_publisher",
+        robot_description_param_name: str = "robot_description",
+        robot_description_timeout_sec: float = 5.0,
         start_obj_pose: XYZQuatType = [0.0, -0.2, 0.85, 0.0, 0.0, 0.0, 1.0],
         use_spline_gradient_based_opt: bool = True,
         gripper_open_value: float = 0.04,
@@ -93,16 +100,21 @@ class HPPInterface:
         self.default_obstacle2_pose = destination_bin_pose
         self.default_object_bounds = [-1.0, 1.5, -1.5, 1.0, 0.0, 2.2]
         package_location = "package://agimus_demo_05_pick_and_place"
-        urdf_string = (
-            process_xacro(
+        urdf_string = robot_urdf_string
+        if urdf_string == "" and ros_node is not None:
+            urdf_string = self._get_robot_description_from_ros(
+                ros_node,
+                node_name=robot_description_node_name,
+                param_name=robot_description_param_name,
+                timeout_sec=robot_description_timeout_sec,
+            )
+        if urdf_string == "":
+            urdf_string = process_xacro(
                 package_location + "/urdf/demo.urdf.xacro",
                 "arm_id:=fer",
                 "ee_id:=franka_hand_with_camera",
                 "use_camera:=true",
             ).replace("file://", "")
-            if robot_urdf_string == ""
-            else robot_urdf_string
-        )
         Robot.urdfString = urdf_string
         Robot.srdfString = robot_srdf_string
 
@@ -132,6 +144,45 @@ class HPPInterface:
         else:
             corba.restart()
         self.setup_problem()
+
+    def _get_robot_description_from_ros(
+        self,
+        ros_node: "rclpy.node.Node",
+        node_name: str,
+        param_name: str,
+        timeout_sec: float,
+    ) -> str:
+        client = ros_node.create_client(
+            GetParameters, f"{node_name}/get_parameters"
+        )
+        if not client.wait_for_service(timeout_sec=timeout_sec):
+            ros_node.get_logger().warning(
+                "robot_state_publisher parameters not available; "
+                "falling back to local xacro for HPP."
+            )
+            return ""
+        request = GetParameters.Request()
+        request.names = [param_name]
+        future = client.call_async(request)
+        rclpy.spin_until_future_complete(ros_node, future, timeout_sec=timeout_sec)
+        if not future.result():
+            ros_node.get_logger().warning(
+                "Failed to read robot_description; falling back to local xacro for HPP."
+            )
+            return ""
+        response = future.result()
+        if not response.values:
+            ros_node.get_logger().warning(
+                "robot_description is empty; falling back to local xacro for HPP."
+            )
+            return ""
+        value = response.values[0]
+        if value.type != ParameterType.PARAMETER_STRING or not value.string_value:
+            ros_node.get_logger().warning(
+                "robot_description is empty; falling back to local xacro for HPP."
+            )
+            return ""
+        return value.string_value
         
 
     def set_relative_start_obj_pose(
