@@ -43,10 +43,6 @@ from agimus_demo_05_pick_and_place.utils import (
 )
 from hpp.rostools import process_xacro, retrieve_resource
 import pinocchio
-import rclpy
-from rcl_interfaces.msg import ParameterType
-from rcl_interfaces.srv import GetParameters
-import xml.etree.ElementTree as ET
 
 
 XYZQuatType: T.TypeAlias = T.Tuple[float, float, float, float, float, float, float]
@@ -76,10 +72,6 @@ class HPPInterface:
         dataset_name: str = "tless",
         robot_urdf_string: str = "",
         robot_srdf_string: str = "",
-        ros_node: T.Optional["rclpy.node.Node"] = None,
-        robot_description_node_name: str = "robot_state_publisher",
-        robot_description_param_name: str = "robot_description",
-        robot_description_timeout_sec: float = 5.0,
         start_obj_pose: XYZQuatType = [0.0, -0.2, 0.85, 0.0, 0.0, 0.0, 1.0],
         use_spline_gradient_based_opt: bool = True,
         gripper_open_value: float = 0.04,
@@ -102,31 +94,23 @@ class HPPInterface:
         self.default_object_bounds = [-1.0, 1.5, -1.5, 1.0, 0.0, 2.2]
         package_location = "package://agimus_demo_05_pick_and_place"
         urdf_string = robot_urdf_string
-        if urdf_string == "" and ros_node is not None:
-            urdf_string = self._get_robot_description_from_ros(
-                ros_node,
-                node_name=robot_description_node_name,
-                param_name=robot_description_param_name,
-                timeout_sec=robot_description_timeout_sec,
-            )
-            if urdf_string and "support_link" not in urdf_string:
-                ros_node.get_logger().warning(
-                    "robot_description missing support_link; "
-                    "merging support URDF into HPP model."
-                )
-                support_urdf_string = process_xacro(
-                    package_location + "/urdf/support_only.urdf.xacro"
-                ).replace("file://", "")
-                urdf_string = self._merge_support_urdf(
-                    urdf_string, support_urdf_string
-                )
-        if urdf_string == "":
-            urdf_string = process_xacro(
+        
+        urdf_string = process_xacro(
                 package_location + "/urdf/demo.urdf.xacro",
                 "arm_id:=fer",
                 "ee_id:=franka_hand_with_camera",
                 "use_camera:=true",
             ).replace("file://", "")
+
+        # urdf_out_path = Path(
+        #     "/home/gepetto/ros2_ws/src/agimus-demos/agimus_demo_05_pick_and_place/hpp_urdf.urdf"
+        # )
+        # urdf_out_path.parent.mkdir(parents=True, exist_ok=True)
+        # urdf_out_path.write_text(
+        #     urdf_string if urdf_string.endswith("\n") else urdf_string + "\n",
+        #     encoding="utf-8",
+        # )
+        
         Robot.urdfString = urdf_string
         Robot.srdfString = robot_srdf_string
 
@@ -156,64 +140,6 @@ class HPPInterface:
         else:
             corba.restart()
         self.setup_problem()
-
-    def _get_robot_description_from_ros(
-        self,
-        ros_node: "rclpy.node.Node",
-        node_name: str,
-        param_name: str,
-        timeout_sec: float,
-    ) -> str:
-        client = ros_node.create_client(
-            GetParameters, f"{node_name}/get_parameters"
-        )
-        if not client.wait_for_service(timeout_sec=timeout_sec):
-            ros_node.get_logger().warning(
-                "robot_state_publisher parameters not available; "
-                "falling back to local xacro for HPP."
-            )
-            return ""
-        request = GetParameters.Request()
-        request.names = [param_name]
-        future = client.call_async(request)
-        rclpy.spin_until_future_complete(ros_node, future, timeout_sec=timeout_sec)
-        if not future.result():
-            ros_node.get_logger().warning(
-                "Failed to read robot_description; falling back to local xacro for HPP."
-            )
-            return ""
-        response = future.result()
-        if not response.values:
-            ros_node.get_logger().warning(
-                "robot_description is empty; falling back to local xacro for HPP."
-            )
-            return ""
-        value = response.values[0]
-        if value.type != ParameterType.PARAMETER_STRING or not value.string_value:
-            ros_node.get_logger().warning(
-                "robot_description is empty; falling back to local xacro for HPP."
-            )
-            return ""
-        return value.string_value
-
-    def _merge_support_urdf(self, base_urdf: str, support_urdf: str) -> str:
-        base_root = ET.fromstring(base_urdf)
-        support_root = ET.fromstring(support_urdf)
-        existing_names = set()
-        for elem in base_root.findall("link"):
-            name = elem.attrib.get("name")
-            if name:
-                existing_names.add(name)
-        for elem in base_root.findall("joint"):
-            name = elem.attrib.get("name")
-            if name:
-                existing_names.add(name)
-        for elem in support_root:
-            name = elem.attrib.get("name")
-            if name and name in existing_names:
-                continue
-            base_root.append(elem)
-        return ET.tostring(base_root, encoding="unicode")
         
 
     def set_relative_start_obj_pose(
@@ -356,9 +282,6 @@ class HPPInterface:
     ) -> T.List[float]:
         """Get the position of a robot frame"""
         # TODO don't assume q_robot is of right size.
-        print("in get_robot_link_positions")
-        print(frame_name)
-        print(self.robot.client.basic.robot.getLinkNames())
         q = self.robot.getCurrentConfig()
         q[: len(q_robot)] = q_robot
         (frame_position,) = self.robot.client.basic.robot.getLinksPosition(

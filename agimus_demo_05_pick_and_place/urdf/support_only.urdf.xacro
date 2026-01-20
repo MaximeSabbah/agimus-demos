@@ -1,5 +1,0 @@
-<?xml version="1.0"?>
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="support_only">
-  <xacro:include filename="$(find agimus_demo_05_pick_and_place)/urdf/support.urdf.xacro"/>
-  <xacro:support/>
-</robot>
