@@ -414,6 +414,7 @@ class Orchestrator(object):
             object_name=self.default_object_name,
             dataset_name=self.dataset_name,
             use_spline_gradient_based_opt=False,
+            ros_node=self._node,
             source_bin_pose=self.source_bin_pose,
             destination_bin_pose=self.destination_bin_pose,
         )
@@ -463,6 +464,7 @@ class Orchestrator(object):
             object_name=object_name,
             dataset_name=self.dataset_name,
             use_spline_gradient_based_opt=False,
+            ros_node=self._node,
             source_bin_pose=self.source_bin_pose,
             destination_bin_pose=self.destination_bin_pose,
         )
@@ -591,6 +593,7 @@ class Orchestrator(object):
         self.hpp_client = HPPInterface(
             object_name="obj_26",
             use_spline_gradient_based_opt=False,
+            ros_node=self._node,
         )
 
         paths = self.hpp_client.plan_calib_motion(
