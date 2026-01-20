@@ -44,8 +44,8 @@ from agimus_demo_05_pick_and_place.utils import (
 from hpp.rostools import process_xacro, retrieve_resource
 import pinocchio
 import rclpy
-from rcl_interfaces.msg import ParameterType
-from rcl_interfaces.srv import GetParameters
+from rclpy.parameter import Parameter
+from rclpy.parameter_client import AsyncParametersClient
 
 
 XYZQuatType: T.TypeAlias = T.Tuple[float, float, float, float, float, float, float]
@@ -152,37 +152,27 @@ class HPPInterface:
         param_name: str,
         timeout_sec: float,
     ) -> str:
-        client = ros_node.create_client(
-            GetParameters, f"{node_name}/get_parameters"
-        )
+        client = AsyncParametersClient(ros_node, node_name)
         if not client.wait_for_service(timeout_sec=timeout_sec):
             ros_node.get_logger().warning(
                 "robot_state_publisher parameters not available; "
                 "falling back to local xacro for HPP."
             )
             return ""
-        request = GetParameters.Request()
-        request.names = [param_name]
-        future = client.call_async(request)
+        future = client.get_parameters([param_name])
         rclpy.spin_until_future_complete(ros_node, future, timeout_sec=timeout_sec)
         if not future.result():
             ros_node.get_logger().warning(
                 "Failed to read robot_description; falling back to local xacro for HPP."
             )
             return ""
-        response = future.result()
-        if not response.values:
+        param = future.result()[0]
+        if param.type_ == Parameter.Type.NOT_SET or not param.value:
             ros_node.get_logger().warning(
                 "robot_description is empty; falling back to local xacro for HPP."
             )
             return ""
-        value = response.values[0]
-        if value.type != ParameterType.PARAMETER_STRING or not value.string_value:
-            ros_node.get_logger().warning(
-                "robot_description is empty; falling back to local xacro for HPP."
-            )
-            return ""
-        return value.string_value
+        return param.value
         
 
     def set_relative_start_obj_pose(
