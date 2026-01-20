@@ -41,6 +41,8 @@ def launch_setup(
     vision_type = context.perform_substitution(vision_type_arg).lower()
     dataset_name_arg = LaunchConfiguration("dataset_name")
     dataset_name = context.perform_substitution(dataset_name_arg).lower()
+    arm_id_arg = LaunchConfiguration("arm_id")
+    arm_id = context.perform_substitution(arm_id_arg).lower()
 
     agimus_controller_yaml = PathJoinSubstitution(
         [
@@ -175,7 +177,7 @@ def launch_setup(
             "-hold",
             "-e",
             'bash -c "source /opt/ros/humble/setup.bash && '
-            f'ros2 run agimus_demo_05_pick_and_place pick_and_place_node --ros-args -p use_sim_time:={use_gazebo_bool} -p vision_type:={vision_type} -p dataset_name:={dataset_name} --params-file {trajectory_weights_yaml}"',  #
+            f'ros2 run agimus_demo_05_pick_and_place pick_and_place_node --ros-args -p use_sim_time:={use_gazebo_bool} -p vision_type:={vision_type} -p dataset_name:={dataset_name} -p arm_id:={arm_id} --params-file {trajectory_weights_yaml}"',  #
         ],
         output="screen",
     )
@@ -228,9 +230,16 @@ def generate_launch_description():
         choices=["tless", "ycbv"],
         description="Dataset used.",
     )
+    arm_id = DeclareLaunchArgument(
+        "arm_id",
+        default_value="fer",
+        choices=["fer", "fr3"],
+        description="Arm id.",
+    )
     return LaunchDescription(
         [vision_type]
         + [dataset_name]
+        + [arm_id]
         + generate_default_franka_args()
         + [OpaqueFunction(function=launch_setup)]
     )

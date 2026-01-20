@@ -148,6 +148,10 @@ class Orchestrator(object):
         self.vision_type = (
             self._node.get_parameter("vision_type").get_parameter_value().string_value
         )
+        self._node.declare_parameter("arm_id", "fer")
+        self.arm_id = (
+            self._node.get_parameter("arm_id").get_parameter_value().string_value
+        )
 
         self.object_to_grasp_name = None
         self.start_obj_pose = None
@@ -462,6 +466,7 @@ class Orchestrator(object):
             source_bin_pose=self.source_bin_pose,
             destination_bin_pose=self.destination_bin_pose,
         )
+
         self.publish_transform_in_tf(
             parent_frame=map_object_id(object_name, dataset=self.dataset_name),
             child_frame="current_object",

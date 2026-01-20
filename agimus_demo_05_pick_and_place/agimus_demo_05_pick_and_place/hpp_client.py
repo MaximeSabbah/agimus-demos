@@ -132,6 +132,7 @@ class HPPInterface:
         else:
             corba.restart()
         self.setup_problem()
+        
 
     def set_relative_start_obj_pose(
         self, obj_pose_in_frame: XYZQuatType, q_robot: T.List[float], frame_name: str
@@ -273,6 +274,9 @@ class HPPInterface:
     ) -> T.List[float]:
         """Get the position of a robot frame"""
         # TODO don't assume q_robot is of right size.
+        print("in get_robot_link_positions")
+        print(frame_name)
+        print(self.robot.client.basic.robot.getLinkNames())
         q = self.robot.getCurrentConfig()
         q[: len(q_robot)] = q_robot
         (frame_position,) = self.robot.client.basic.robot.getLinksPosition(
