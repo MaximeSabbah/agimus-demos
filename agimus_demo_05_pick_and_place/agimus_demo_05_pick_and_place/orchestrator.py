@@ -131,7 +131,8 @@ class Orchestrator(object):
         self.param = OrchestratorParams()
 
         self.source_bin_pose = [0.5, 0.3, 0.9, 0.0, 0.0, 0.0, 1.0]
-        self.destination_bin_pose = [-0.1, -0.1, 0.9, 0.0, 0.0, 0.0, 1.0]
+        # self.destination_bin_pose = [-0.1, -0.1, 0.9, 0.0, 0.0, 0.0, 1.0]
+        self.destination_bin_pose = [0.0, 0.0, 0.9, 0.0, 0.0, 0.0, 1.0]
         self.min_opening_for_grasp = 0.01
 
         self.franka_gripper_cient = FrankaGripperClient(self._node)
@@ -356,6 +357,9 @@ class Orchestrator(object):
         q_array, dq_array, ddq_array = get_q_dq_ddq_arrays_from_path(
             path_vector, dt=self.dt
         )
+
+        print(f"[add_trajectory_to_publish] Publishing the following joint trajectory: {q_array}")
+
         # TODO: get this from OCP params somehow
         horizon_size = 40
         multiplier = 1
@@ -542,6 +546,7 @@ class Orchestrator(object):
                     self.trajectory_publisher.future_trajectory_done,
                 )
                 # time.sleep(2.)
+                grasped = True # Be careful
             else:
                 print(
                     f"GRASPED, {opening}: {gripper_state.position[0]}. {gripper_state.position[1]}"

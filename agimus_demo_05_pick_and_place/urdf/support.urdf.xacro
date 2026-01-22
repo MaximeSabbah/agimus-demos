@@ -201,7 +201,7 @@
     </joint>
     <link name="robot_attachment_link" />
     <joint name="support_joint" type="fixed">
-      <origin xyz="0.422 0.0 .92" rpy="0 0 ${pi}" />
+      <origin xyz="0.422 0.0 .90" rpy="0 0 ${pi}" />
       <parent link="support_link" />
       <child link="robot_attachment_link" />
     </joint>

@@ -26,6 +26,8 @@ from agimus_demos_common.static_transform_publisher_node import (
     static_transform_publisher_node,
 )
 
+from agimus_demos_common.mpc_debugger_node import mpc_debugger_node
+
 
 def launch_setup(
     context: LaunchContext, *args, **kwargs
@@ -37,6 +39,8 @@ def launch_setup(
             "use_camera": "true",
         },
     )
+    use_mpc_debugger = LaunchConfiguration("use_mpc_debugger")
+
     vision_type_arg = LaunchConfiguration("vision_type")
     vision_type = context.perform_substitution(vision_type_arg).lower()
     dataset_name_arg = LaunchConfiguration("dataset_name")
@@ -182,10 +186,21 @@ def launch_setup(
         output="screen",
     )
 
+    mpc_debugger = mpc_debugger_node(
+        "fer_hand_tcp",
+        parent_frame="fer_link0",
+        cost_plot=True,
+        node_kwargs=dict(
+            remappings=[("robot_description", "robot_description_with_collision")],
+            condition=IfCondition(use_mpc_debugger),
+        ),
+    )
+
     nodes_to_launch = [
         franka_robot_launch,
         wait_for_non_zero_joints_node,
         *env_nodes,
+        mpc_debugger,
         RegisterEventHandler(
             event_handler=OnProcessExit(
                 target_action=wait_for_non_zero_joints_node,
@@ -236,10 +251,19 @@ def generate_launch_description():
         choices=["fer", "fr3"],
         description="Arm id.",
     )
+
+    mpc_debug = DeclareLaunchArgument(
+            "use_mpc_debugger",
+            default_value="true",
+            description="Launches the mpc_debugger_node along.",
+            choices=["true", "false"],
+        )
+
     return LaunchDescription(
         [vision_type]
         + [dataset_name]
         + [arm_id]
+        + [mpc_debug]
         + generate_default_franka_args()
         + [OpaqueFunction(function=launch_setup)]
     )

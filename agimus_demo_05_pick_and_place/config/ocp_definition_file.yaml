@@ -6,7 +6,7 @@ running_model:
     costs:
     - name: control_reg
       update: true
-      weight: 10.0
+      weight: 5.0
       active: true
       cost:
         class: CostModelResidual
@@ -17,7 +17,7 @@ running_model:
           class: ResidualModelControl
     - name: state_reg
       update: true
-      weight: 1.0
+      weight: 50.0
       cost:
         class: CostModelResidual
         activation:
@@ -163,7 +163,7 @@ terminal_model:
     costs:
     - name: state_reg
       update: true
-      weight: 0.0
+      weight: 50
       cost:
         class: CostModelResidual
         activation:

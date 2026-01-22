@@ -16,14 +16,16 @@
     <visual>
       <origin xyz="0 0 0.0005" rpy="0 0 0" />
       <geometry>
-        <box size="0.40 0.305 0.001" />
+        <!-- <box size="0.40 0.305 0.001" /> -->
+         <box size="0.0 0.0 0.0" />
       </geometry>
       <material name="red" />
     </visual>
     <collision>
       <origin xyz="0 0 0.0005" rpy="0 0 0" />
       <geometry>
-        <box size="0.40 0.305 0.001" />
+        <!-- <box size="0.40 0.305 0.001" /> -->
+         <box size="0.0 0.0 0.0" />
       </geometry>
     </collision>
 
@@ -32,14 +34,16 @@
     <visual>
       <origin xyz="0 0.152 0.0475" rpy="0 0 0" />
       <geometry>
-        <box size="0.398 0.001 0.093" />
+        <!-- <box size="0.398 0.001 0.093" /> -->
+         <box size="0.0 0.0 0.0" />
       </geometry>
       <material name="red" />
     </visual>
     <collision>
       <origin xyz="0 0.152 0.0475" rpy="0 0 0" />
       <geometry>
-        <box size="0.398 0.001 0.093" />
+        <!-- <box size="0.398 0.001 0.093" /> -->
+         <box size="0.0 0.0 0.0" />
       </geometry>
     </collision>
 
@@ -47,14 +51,16 @@
     <visual>
       <origin xyz="0 -0.152 0.0475" rpy="0 0 0" />
       <geometry>
-        <box size="0.398 0.001 0.093" />
+        <!-- <box size="0.398 0.001 0.093" /> -->
+         <box size="0.0 0.0 0.0" />
       </geometry>
       <material name="red" />
     </visual>
     <collision>
       <origin xyz="0 -0.152 0.0475" rpy="0 0 0" />
       <geometry>
-        <box size="0.398 0.001 0.093" />
+        <!-- <box size="0.398 0.001 0.093" /> -->
+         <box size="0.0 0.0 0.0" />
       </geometry>
     </collision>
 
@@ -62,14 +68,16 @@
     <visual>
       <origin xyz="0.1995 0 0.0475" rpy="0 0 0" />
       <geometry>
-        <box size="0.001 0.303 0.093" />
+        <!-- <box size="0.001 0.303 0.093" /> -->
+         <box size="0.0 0.0 0.0" />
       </geometry>
       <material name="red" />
     </visual>
     <collision>
       <origin xyz="0.1995 0 0.0475" rpy="0 0 0" />
       <geometry>
-        <box size="0.001 0.303 0.093" />
+        <!-- <box size="0.001 0.303 0.093" /> -->
+         <box size="0.0 0.0 0.0" />
       </geometry>
     </collision>
 
@@ -77,14 +85,16 @@
     <visual>
       <origin xyz="-0.1995 0 0.0475" rpy="0 0 0" />
       <geometry>
-        <box size="0.001 0.303 0.093" />
+        <!-- <box size="0.001 0.303 0.093" /> -->
+         <box size="0.0 0.0 0.0" />
       </geometry>
       <material name="red" />
     </visual>
     <collision>
       <origin xyz="-0.1995 0 0.0475" rpy="0 0 0" />
       <geometry>
-        <box size="0.001 0.303 0.093" />
+        <!-- <box size="0.001 0.303 0.093" /> -->
+         <box size="0.0 0.0 0.0" />
       </geometry>
     </collision>
 
