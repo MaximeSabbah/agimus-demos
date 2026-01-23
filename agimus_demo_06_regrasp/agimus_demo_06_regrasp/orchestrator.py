@@ -3,7 +3,9 @@
 from dataclasses import dataclass
 import numpy as np
 from typing import Tuple
+import pinocchio as pin
 
+import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy
 from geometry_msgs.msg import Pose
@@ -14,12 +16,16 @@ from agimus_demo_06_regrasp.franka_gripper_client import FrankaGripperClient
 
 from agimus_demo_06_regrasp.manipulation_rrt_planner import ManipulationPlanner
 from agimus_demo_06_regrasp.async_subscriber import AsyncSubscriber
-from agimus_demo_06_regrasp.trajectory_publisher import TrajectoryPublisher
+from agimus_controller_ros.simple_trajectory_publisher import (
+    SimpleTrajectoryPublisher,
+)
+
+# from agimus_demo_06_regrasp.trajectory_publisher import TrajectoryPublisher
 from agimus_demo_06_regrasp.utils import (
     normalize_quaternion,
     multiply_poses,
     XYZQuatType,
-    get_traj_points_from_path,
+    get_q_dq_ddq_arrays_from_path,
 )
 from hpp.corbaserver.manipulation import loadServerPlugin, Robot
 
@@ -82,12 +88,22 @@ def get_goal_box_pose(obj_id: str) -> list[float]:
         return [0.0, 0.0, 0.15, 0.0, 0.0, 0.0, 1.0]
 
 
+def get_in_fer_link0_M_support_link():
+    in_fer_link0_M_support_link = pin.SE3.Identity()
+    in_fer_link0_M_support_link.translation = np.array([0.563, -0.165, -0.780])
+    in_fer_link0_M_support_link.rotation[0, 0] = -1.0
+    in_fer_link0_M_support_link.rotation[1, 1] = -1.0
+    return in_fer_link0_M_support_link
+
+
 @dataclass
 class OrchestratorParams:
     """Orchestrator parameters."""
 
+    # TODO: update with the novel way (look on demo5)
     max_holding_force: float = 40.0
-    use_hardcoded_poses: bool = True
+    use_simulation: bool = False
+    use_hardcoded_poses: bool = False
     use_smoothing_at_waypoints: bool = True
     ocp_horizon: int = 40
 
@@ -101,13 +117,11 @@ class Orchestrator(object):
 
         self.franka_gripper_cient = FrankaGripperClient(self._node)
         self.default_object_name = "cont_grasp_net_obj"
-        self.use_sim = (
-            self._node.get_parameter("use_sim_time").get_parameter_value().bool_value
-        )
+        self.use_sim = self.param.use_simulation
         self.use_hardcoded_poses = self.param.use_hardcoded_poses
         self.smooth = self.param.use_smoothing_at_waypoints
 
-        self.trajectory_publisher = TrajectoryPublisher(self._node)
+        self.trajectory_publisher = SimpleTrajectoryPublisher()
 
         self.state_client = AsyncSubscriber(
             self._node,
@@ -130,6 +144,9 @@ class Orchestrator(object):
             )
 
         self.open_gripper()
+        rclpy.spin_until_future_complete(
+            self.trajectory_publisher, self.trajectory_publisher.future_init_done
+        )
         # if hppcorbaserver is running in a separate script
         loadServerPlugin("corbaserver", "manipulation-corba.so")
         loadServerPlugin("corbaserver", "bin_picking.so")
@@ -236,17 +253,61 @@ class Orchestrator(object):
         # TODO: change it to something normal
         # time.sleep(1.0)
 
-    def publish(self, path_vector, smooth_at_len=[], dt=0.01):
-        traj = get_traj_points_from_path(path_vector, dt=dt)
-        # TODO: get this from OCP params somehow
-        traj += [
-            traj[-1]
-        ] * self.param.ocp_horizon  # add points in the end of len of OCP horizon
-        if len(smooth_at_len) > 0:
-            smoothing_indices = [int(el / dt) for el in smooth_at_len]
-            self.trajectory_publisher.publish(traj, smoothing_indices=smoothing_indices)
-        else:
-            self.trajectory_publisher.publish(traj)
+    def add_trajectory_to_publish(self, path_vector, visual_servoing_time_range=None):
+        q_array, dq_array, ddq_array = get_q_dq_ddq_arrays_from_path(
+            path_vector, dt=self.trajectory_publisher.dt
+        )
+        # add complete horizon at the end of the trajectory of the last point
+        q_array += [q_array[-1]] * self.param.ocp_horizon  # OCP horizon
+        dq_array += [dq_array[-1]] * self.param.ocp_horizon  # OCP horizon
+        ddq_array += [ddq_array[-1]] * self.param.ocp_horizon  # OCP horizon
+
+        # # TODO: get this from OCP params somehow
+        # traj += [
+        #     traj[-1]
+        # ] * self.param.ocp_horizon  # add points in the end of len of OCP horizon
+        # if len(smooth_at_len) > 0:
+        #     smoothing_indices = [int(el / dt) for el in smooth_at_len]
+        #     self.trajectory_publisher.publish(traj, smoothing_indices=smoothing_indices)
+        # else:
+        #     self.trajectory_publisher.publish(traj)
+        # find trajectory points idx range where to apply visual servoing
+
+        # TODO: add smoothing params to agimus_controller_ros simple_traj_publisher!
+        visual_servoing_idx_range = [0, 0]
+        # if visual_servoing_time_range is None:
+        #     visual_servoing_idx_range = [0, 0]
+        # else:
+        #     visual_servoing_idx_range = [
+        #         int(t / self.trajectory_publisher.dt) for t in visual_servoing_time_range
+        #     ]
+        #     if visual_servoing_time_range[1] == path_vector.length():
+        #         visual_servoing_idx_range[1] += self.param.ocp_horizon
+
+        # convert arrays in list of trajectory points
+        trajectory = (
+            self.trajectory_publisher.trajectory.build_trajectory_from_q_dq_ddq_arrays(
+                q_array, dq_array, ddq_array
+            )
+        )
+
+        # pass the trajectory to the trajectory publisher
+        if self.trajectory_publisher.params.trajectory_name == "generic_trajectory":
+            self.trajectory_publisher.add_trajectory(trajectory)
+        elif (
+            self.trajectory_publisher.params.trajectory_name
+            == "generic_visual_servoing_trajectory"
+        ):
+            in_support_link_M_object = pin.XYZQUATToSE3(self.start_obj_pose.copy())
+            in_fer_link0_M_object = (
+                get_in_fer_link0_M_support_link() * in_support_link_M_object
+            )
+
+            self.trajectory_publisher.add_visual_servoing_trajectory(
+                trajectory,
+                visual_servoing_idx_range,
+                pin.SE3ToXYZQUAT(in_fer_link0_M_object),
+            )
 
     def regrasp(self, object_name: str):
         current_robot_state = self.state_client.wait_for_future()
@@ -269,11 +330,11 @@ class Orchestrator(object):
         # self.hpp_client = HPPInterface(
         #     object_name=object_name, use_spline_gradient_based_opt=False
         # )
-        start_obj_pose, rotated_90, rotate_180 = self.get_object_start_and_goal_pose(
+        self.start_obj_pose, _, rotate_180 = self.get_object_start_and_goal_pose(
             object_name=object_name, q=hpp_q_init, robot=self.planner.robot
         )
 
-        hpp_q_init = list(current_robot_state.position) + start_obj_pose
+        hpp_q_init = list(current_robot_state.position) + self.start_obj_pose
         hpp_q_goal = list(current_robot_state.position) + rotate_180
 
         is_solved, path_sequences = self.planner.solve(hpp_q_init, hpp_q_goal)
@@ -281,17 +342,36 @@ class Orchestrator(object):
         if is_solved:
             input("Solution found! ready to execute it?")
             for path, object_moves, waypoints_at_len in path_sequences:
-                if self.smooth:
-                    self.publish(path, waypoints_at_len)
-                else:
-                    self.publish(path)
+                # if self.smooth:
+                #     self.publish(path, waypoints_at_len)
+                # else:
+                #     self.publish(path)
                 # assuming object moves always goes 0-1-0-1-0-1
                 if not object_moves:
+                    # grasping path
+                    time_pre_grasp = path.pathAtRank(path.numberPaths() - 1).length()
+                    self.add_trajectory_to_publish(
+                        path,
+                        visual_servoing_time_range=[
+                            path.length() - time_pre_grasp,
+                            path.length(),
+                        ],
+                    )
+                    rclpy.spin_until_future_complete(
+                        self.trajectory_publisher,
+                        self.trajectory_publisher.future_trajectory_done,
+                    )
                     if self.use_sim:
                         self.close_gripper()  # for simulation
                     else:
                         self.grasp()  # for hardware robot
                 else:
+                    self.add_trajectory_to_publish(path)
+                    rclpy.spin_until_future_complete(
+                        self.trajectory_publisher,
+                        self.trajectory_publisher.future_trajectory_done,
+                    )
                     self.open_gripper()
+
                 # This input provides some delay for robot to grasp
                 input("Continue to the next path?")

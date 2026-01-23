@@ -70,9 +70,13 @@ class ManipulationPlanner:
         Client().problem.resetProblem()
         newProblem()
         # Load robot
-        Robot.urdfString = process_xacro(
-            self.package_location + "/urdf/demo.urdf.xacro"
-        )
+
+        urdf_string = process_xacro(
+                self.package_location + "/urdf/demo.urdf.xacro",
+                "use_camera:=true",
+            ).replace("file://", "")
+        
+        Robot.urdfString = urdf_string
         Robot.srdfString = ""
         self.robot = Robot("robot", "panda", rootJointType="anchor")
         shrinkJointRange(self.robot, [f"panda/fer_joint{i}" for i in range(1, 8)], 0.95)

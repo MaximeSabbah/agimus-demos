@@ -140,7 +140,7 @@
       <visual>
         <origin xyz="0 0 0.0225" />
         <geometry>
-          <box size="0.2 0.4 0.045" />
+          <box size="0.5 0.9 0.045" />
         </geometry>
         <material name="transp_blue">
           <color rgba="0 0.3 0.9 0.5" />
@@ -149,7 +149,7 @@
       <collision>
         <origin xyz="0 0 0.0225" />
         <geometry>
-          <box size="0.2 0.4 0.045" />
+          <box size="0.5 0.9 0.045" />
         </geometry>
       </collision>
     </link>
