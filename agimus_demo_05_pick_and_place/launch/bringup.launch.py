@@ -254,7 +254,7 @@ def generate_launch_description():
 
     mpc_debug = DeclareLaunchArgument(
             "use_mpc_debugger",
-            default_value="true",
+            default_value="false",
             description="Launches the mpc_debugger_node along.",
             choices=["true", "false"],
         )

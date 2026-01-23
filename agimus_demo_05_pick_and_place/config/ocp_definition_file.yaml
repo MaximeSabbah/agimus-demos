@@ -6,7 +6,7 @@ running_model:
     costs:
     - name: control_reg
       update: true
-      weight: 1.0
+      weight: 2.0
       active: true
       cost:
         class: CostModelResidual
@@ -40,7 +40,7 @@ running_model:
           object_frame: current_object
     - name: avoid_collision
       update: true
-      weight: 1.0
+      weight: 0.0
       publish_residual: true
       cost:
         class: CostModelResidual
@@ -53,7 +53,7 @@ running_model:
           collision_pair: [fer_hand_sc_capsule_1, big_box_link_1]
     - name: avoid_collision2
       update: true
-      weight: 1.0
+      weight: 0.0
       publish_residual: true
       cost:
         class: CostModelResidual
@@ -66,7 +66,7 @@ running_model:
           collision_pair: [fer_hand_sc_capsule_1, big_box_link_2]
     - name: avoid_collision3
       update: true
-      weight: 1.0
+      weight: 0.0
       publish_residual: true
       cost:
         class: CostModelResidual
@@ -79,7 +79,7 @@ running_model:
           collision_pair: [fer_hand_sc_capsule_1, big_box_link_3]
     - name: avoid_collision4
       update: true
-      weight: 1.0
+      weight: 0.0
       publish_residual: true
       cost:
         class: CostModelResidual
@@ -92,7 +92,7 @@ running_model:
           collision_pair: [fer_hand_sc_capsule_1, big_box_link_4]
     - name: avoid_collision5
       update: true
-      weight: 1.0
+      weight: 0.0
       publish_residual: true
       cost:
         class: CostModelResidual
@@ -105,7 +105,7 @@ running_model:
           collision_pair: [fer_hand_sc_capsule_1, obstacle1_capsule_0]
     - name: avoid_collision6
       update: true
-      weight: 1.0
+      weight: 0.0
       publish_residual: true
       cost:
         class: CostModelResidual
@@ -118,7 +118,7 @@ running_model:
           collision_pair: [fer_link5_sc_capsule_0, obstacle1_capsule_0]
     - name: avoid_collision7
       update: true
-      weight: 1.0
+      weight: 0.0
       publish_residual: true
       cost:
         class: CostModelResidual
@@ -131,7 +131,7 @@ running_model:
           collision_pair: [fer_link5_sc_capsule_1, obstacle1_capsule_0]
     - name: avoid_collision8
       update: true
-      weight: 1.0
+      weight: 0.0
       publish_residual: true
       cost:
         class: CostModelResidual
@@ -144,7 +144,7 @@ running_model:
           collision_pair: [fer_link6_sc_capsule_0, obstacle1_capsule_0]
     - name: avoid_collision9
       update: true
-      weight: 1.0
+      weight: 0.0
       publish_residual: true
       cost:
         class: CostModelResidual
@@ -163,7 +163,7 @@ terminal_model:
     costs:
     - name: state_reg
       update: true
-      weight: 1.0
+      weight: 10.0
       cost:
         class: CostModelResidual
         activation:

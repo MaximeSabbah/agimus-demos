@@ -502,6 +502,10 @@ class Orchestrator(object):
             if enable_visualization_in_gepetto_gui:
                 # self.v = self.hpp_client.vf.createViewer()
                 self.hpp_client.v(self.hpp_client.q_init)
+                q_array, dq_array, ddq_array = get_q_dq_ddq_arrays_from_path(
+                grasp_path, dt=self.dt
+                )
+                print(f"[pick_and_place] sending the following grasp trajectory: {q_array}")
                 input("Trajectory computed. Ready to move. Press Enter to start motion...")
 
             self.open_gripper()
