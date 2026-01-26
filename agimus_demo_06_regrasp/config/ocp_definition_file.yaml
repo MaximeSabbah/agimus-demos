@@ -17,7 +17,8 @@ running_model:
           class: ResidualModelControlGrav
     - name: state_reg
       update: true
-      weight: 10.0
+      weight: 50.0
+      publish_residual: true
       cost:
         class: CostModelResidual
         activation:
@@ -46,7 +47,7 @@ terminal_model:
     costs:
     - name: state_reg
       update: true
-      weight: 1.0
+      weight: 10.0
       cost:
         class: CostModelResidual
         activation:

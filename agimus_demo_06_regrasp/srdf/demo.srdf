@@ -11,14 +11,14 @@
       4 3 2 1 0
     </shape>
   </contact>
-  <!-- Size of foam block from urdf: 0.25 0.4 0.07 -->
+  <!-- Size of foam block from urdf: 0.25 0.4 0.105 -->
   <contact name="foam_block_contact">
     <link name="foam_block"/>
     <point>
-      0.1   0.2  0.05
-      0.1   -0.2 0.05
-      -0.1  -0.2 0.05
-      -0.1  0.2  0.05
+      0.1   0.2  0.106
+      0.1   -0.2 0.106
+      -0.1  -0.2 0.106
+      -0.1  0.2  0.106
     </point>
     <shape>4 3 2 1 0</shape>
   </contact>

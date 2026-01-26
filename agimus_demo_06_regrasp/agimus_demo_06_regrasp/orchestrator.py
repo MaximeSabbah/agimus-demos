@@ -101,7 +101,7 @@ class OrchestratorParams:
     """Orchestrator parameters."""
 
     # TODO: update with the novel way (look on demo5)
-    max_holding_force: float = 40.0
+    max_holding_force: float = 50.0
     use_simulation: bool = False
     use_hardcoded_poses: bool = False
     use_smoothing_at_waypoints: bool = True
@@ -253,6 +253,14 @@ class Orchestrator(object):
         # TODO: change it to something normal
         # time.sleep(1.0)
 
+    def set_temporary_hpp_q_init(self, pose, obj_pose):
+        """Useful to get correct transformation between robot's frames."""
+        q_tmp = (
+            pose
+            + obj_pose
+        )
+        self.planner.robot.setCurrentConfig(q_tmp)
+
     def add_trajectory_to_publish(self, path_vector, visual_servoing_time_range=None):
         q_array, dq_array, ddq_array = get_q_dq_ddq_arrays_from_path(
             path_vector, dt=self.trajectory_publisher.dt
@@ -350,6 +358,12 @@ class Orchestrator(object):
                 # else:
                 #     self.publish(path)
                 # assuming object moves always goes 0-1-0-1-0-1
+
+                q_array, dq_array, ddq_array = get_q_dq_ddq_arrays_from_path(
+                    path, dt=self.trajectory_publisher.dt
+                )
+
+                print(q_array)
                 if not object_moves:
                     # grasping path
                     time_pre_grasp = path.pathAtRank(path.numberPaths() - 1).length()
@@ -364,6 +378,15 @@ class Orchestrator(object):
                         self.trajectory_publisher,
                         self.trajectory_publisher.future_trajectory_done,
                     )
+
+                    # Uncomment this to DEBUG if the robot arrives where it should!
+                    input("Free trajectory finished Press to capture robot q")
+                    current_robot_state = self.state_client.wait_for_future()
+                    current_robot_q = list(current_robot_state.position)
+                    self.set_temporary_hpp_q_init(current_robot_q, self.start_obj_pose)
+                    # self.planner.robot.setCurrentConfig(current_robot_q)
+                    input("Free trajectory finished. Press Enter to grasp...")
+
                     if self.use_sim:
                         self.close_gripper()  # for simulation
                     else:
@@ -375,6 +398,7 @@ class Orchestrator(object):
                         self.trajectory_publisher.future_trajectory_done,
                     )
                     self.open_gripper()
-
+                
+                
                 # This input provides some delay for robot to grasp
                 input("Continue to the next path?")
