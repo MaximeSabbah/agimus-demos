@@ -129,8 +129,8 @@ class HPPInterface:
             name="source_box",
         )
         self.obstacle2_object = BaseObject(
-            urdf_path=retrieve_resource(f"{package_location}/urdf/big_box.urdf"),
-            srdf_path=retrieve_resource(f"{package_location}/srdf/big_box.srdf"),
+            urdf_path=retrieve_resource(f"{package_location}/urdf/small_box.urdf"),
+            srdf_path=retrieve_resource(f"{package_location}/srdf/small_box.srdf"),
             name="dest_box",
         )
         # Init corbaserver
@@ -444,7 +444,12 @@ class HPPInterface:
         # Resolving the path to the object
         print("[INFO] Object found with no collision")
         print("Solving ...")
+        # start = time.perf_counter()
         res, paths = self.binPicking.solve(q_start_solve)
+        # end = time.perf_counter()
+        # elapsed = end - start
+        # with open("timings"+self.object_name + ".txt", "a") as f:
+        #     f.write(f"{elapsed}\n")
         if res:
             grasp_path, placing_path, freefly_path = split_path(
                 paths, self.binPicking.c_robot()

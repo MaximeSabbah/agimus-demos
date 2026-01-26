@@ -10,13 +10,13 @@
     <handle name="goal_handle_up" clearance="0.03">
         <position xyz="0.0 0.0 0.0" xyzw="0.0 0.70710678118 0.0 -0.70710678118" />
         <link name="base_link" />
-        <mask>1 1 1 0 1 1</mask>
+        <mask>1 1 1 0 0 0</mask>
     </handle>
-    <handle name="goal_handle_down" clearance="0.03">
+    <!-- <handle name="goal_handle_down" clearance="0.03">
         <position xyz="0.0 0.0 0.0" xyzw="0.0 0.70710678118 0.0 0.70710678118" />
         <link name="base_link" />
-        <mask>1 1 1 0 1 1</mask>
-    </handle>
+        <mask>1 1 1 0 0 1</mask>
+    </handle> -->
     <!-- <handle name="goal_handle2" clearance="0.03">
         <position xyz="0.0 0.0 0.0" xyzw="0.0 0.0 0.0 1.0"/>
         <link name="base_link"/>
@@ -28,7 +28,7 @@
     </handle>
 
     <handle name="zn_yp2" clearance="0.075">
-        <position xyz="-0.03 0.0 0.0" xyzw="0.0 0.7071067811865475 0.0 0.7071067811865476" />
+        <position xyz="-0.02 0.0 0.0" xyzw="0.0 0.7071067811865475 0.0 0.7071067811865476" />
         <link name="base_link" />
     </handle>
 
@@ -38,7 +38,7 @@
     </handle>
 
     <handle name="zn_yn2" clearance="0.075">
-        <position xyz="-0.03 0.0 0.0" xyzw="-0.7071067811865475 0.0 0.7071067811865476 0.0" />
+        <position xyz="-0.02 0.0 0.0" xyzw="-0.7071067811865475 0.0 0.7071067811865476 0.0" />
         <link name="base_link" />
     </handle>
 

@@ -1,0 +1,94 @@
+<robot name="small_box">
+  <material name="red">
+    <color rgba=".9 .1 .1 1" />
+  </material>
+
+  <link name="base_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <!-- NOTE: mass/inertia left as placeholder; update if you use dynamics -->
+      <mass value="0.6" />
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0"
+               iyy="0.001" iyz="0.0"
+               izz="0.001" />
+    </inertial>
+
+    <!-- Box outer dims: 0.325 x 0.211 x 0.155 (m), thickness t=0.006 (m) -->
+    <!-- Bottom plate: outer_x x outer_y x t -->
+    <visual>
+      <origin xyz="0 0 0.003" rpy="0 0 0" />
+      <geometry>
+        <box size="0.325 0.211 0.006" />
+      </geometry>
+      <material name="red" />
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.003" rpy="0 0 0" />
+      <geometry>
+        <box size="0.325 0.211 0.006" />
+      </geometry>
+    </collision>
+
+    <!-- Walls: thickness t=0.006, wall height = H - t = 0.149 -->
+    <!-- front wall (y +) -->
+    <visual>
+      <origin xyz="0 0.1025 0.0805" rpy="0 0 0" />
+      <geometry>
+        <box size="0.313 0.006 0.149" />
+      </geometry>
+      <material name="red" />
+    </visual>
+    <collision>
+      <origin xyz="0 0.1025 0.0805" rpy="0 0 0" />
+      <geometry>
+        <box size="0.313 0.006 0.149" />
+      </geometry>
+    </collision>
+
+    <!-- back wall (y -) -->
+    <visual>
+      <origin xyz="0 -0.1025 0.0805" rpy="0 0 0" />
+      <geometry>
+        <box size="0.313 0.006 0.149" />
+      </geometry>
+      <material name="red" />
+    </visual>
+    <collision>
+      <origin xyz="0 -0.1025 0.0805" rpy="0 0 0" />
+      <geometry>
+        <box size="0.313 0.006 0.149" />
+      </geometry>
+    </collision>
+
+    <!-- right wall (x +) -->
+    <visual>
+      <origin xyz="0.1595 0 0.0805" rpy="0 0 0" />
+      <geometry>
+        <box size="0.006 0.199 0.149" />
+      </geometry>
+      <material name="red" />
+    </visual>
+    <collision>
+      <origin xyz="0.1595 0 0.0805" rpy="0 0 0" />
+      <geometry>
+        <box size="0.006 0.199 0.149" />
+      </geometry>
+    </collision>
+
+    <!-- left wall (x -) -->
+    <visual>
+      <origin xyz="-0.1595 0 0.0805" rpy="0 0 0" />
+      <geometry>
+        <box size="0.006 0.199 0.149" />
+      </geometry>
+      <material name="red" />
+    </visual>
+    <collision>
+      <origin xyz="-0.1595 0 0.0805" rpy="0 0 0" />
+      <geometry>
+        <box size="0.006 0.199 0.149" />
+      </geometry>
+    </collision>
+
+  </link>
+</robot>

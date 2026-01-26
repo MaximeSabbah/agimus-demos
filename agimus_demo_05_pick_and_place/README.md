@@ -32,17 +32,55 @@ In the code the object is introduced as the tless_obj-31 to add it more easily i
 Five tless objects can be used with happypose in this demo their tless numbers are 21, 22, 23, 25, 26.
 
 ## Start the demo in simulation using the Panda robot.
+For Apriltag detection:
+
 ```bash
-cd workspace
-reset && source install/setup.bash && ros2 launch agimus_demo_05_pick_and_place bringup.launch.py vision_type:=simulate_apriltag_det use_gazebo:=true gz_headless:=true use_rviz:=true
+ros2 launch agimus_demo_05_pick_and_place bringup.launch.py vision_type:=simulate_apriltag_det use_gazebo:=true gz_headless:=true use_rviz:=true
 ```
-After the xterm terminal is opened, type there `o.pick_and_place('obj_<tless object number>')`.
+After the xterm terminal is opened, type there `o.pick_and_place('obj_<tless object number>')`. For Apriltag the tless object number is 31.
 
 ## Start the demo on hardware using the Panda robot.
 To place the source and destination box as it is in hpp, you may have first to calibrate the position of the two boxes, for that you can use in the xterm terminal `o.calibrate`.
-To start the demo :
+
+To start the demo (dual setup + apriltag) :
 ```bash
-ros2 launch agimus_demo_05_pick_and_place bringup.launch.py arm_id:=fer vision_type:=apriltag_det robot_ip:=<fci-ip> use_ft_sensor:=false
+gepetto-gui
+```
+
+```bash
+ros2 launch olt_ros2_pipeline realsense_apriltag.launch.py
+```
+
+```bash
+ros2 launch agimus_demo_05_pick_and_place bringup.launch.py arm_id:=fer vision_type:=apriltag_det robot_ip:=172.17.1.3 aux_computer_ip:=panda2 aux_computer_user:=msabbah  use_ft_sensor:=false use_rviz:=true
+```
+
+To start the demo (dual setup + happypose for tless) :
+
+In vision_cuda docker: 
+
+Don't forget to add the preparation of the meshes: 
+
+```bash
+ros2 run m3t_tracker_ros prepare_sparse_views         --input-path $HAPPYPOSE_DATA_DIR/bop_datasets/tless/models_cad         --output-path $M3T_DATA_DIR         --use-depth
+```
+
+```bash
+ros2 launch olt_ros2_pipeline happypose.launch.py dataset_name:=tless model_type:=pbr
+```
+
+```bash
+ros2 launch olt_ros2_pipeline separate_nodes_pipeline.launch.py m3t_data_dir:=$M3T_DATA_DIR
+```
+
+In control docker: 
+
+```bash
+gepetto-gui
+```
+
+```bash
+ros2 launch agimus_demo_05_pick_and_place bringup.launch.py arm_id:=fer vision_type:=happypose robot_ip:=172.17.1.3 aux_computer_ip:=panda2 aux_computer_user:=msabbah  use_ft_sensor:=false use_rviz:=true
 ```
 
 ## tips
@@ -50,3 +88,20 @@ When hpp doesn't find a trajectory, looking at what the scene looks like for him
 `v = o.hpp_client.vf.createViewer()`
 `v = (o.hpp_client.q_init)`
 you may find transformation or vision issues this way.
+
+<!-- or 
+
+in two terminals
+
+```bash
+ros2 launch realsense2_camera rs_launch.py
+```
+
+```bash
+ros2 run apriltag_ros apriltag_node --ros-args   -r image_rect:=/camera/camera/color/image_raw   -r camera_info:=/camera/camera/color/camera_info   --params-file /home/gepetto/ros2_ws/src/olt_ros2_pipeline/config/tags_36h11.yaml
+```
+
+To check that the tf is well streamed
+```bash
+ros2 run tf2_ros tf2_echo camera_color_optical_frame tless-obj_000031
+``` -->
