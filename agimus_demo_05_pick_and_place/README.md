@@ -70,7 +70,7 @@ ros2 launch olt_ros2_pipeline happypose.launch.py dataset_name:=tless model_type
 ```
 
 ```bash
-ros2 launch olt_ros2_pipeline separate_nodes_pipeline.launch.py m3t_data_dir:=$M3T_DATA_DIR
+ros2 launch olt_ros2_pipeline separate_nodes_pipeline.launch.py m3t_data_dir:=/tmp/m3t_data_dir
 ```
 
 In control docker: 
@@ -80,7 +80,7 @@ gepetto-gui
 ```
 
 ```bash
-ros2 launch agimus_demo_05_pick_and_place bringup.launch.py arm_id:=fer vision_type:=happypose robot_ip:=172.17.1.3 aux_computer_ip:=panda2 aux_computer_user:=msabbah  use_ft_sensor:=false use_rviz:=true
+ros2 launch agimus_demo_05_pick_and_place bringup.launch.py arm_id:=fer vision_type:=happypose robot_ip:=172.17.1.3 aux_computer_ip:=panda2 aux_computer_user:=msabbah  use_ft_sensor:=false use_rviz:=false
 ```
 
 ## tips

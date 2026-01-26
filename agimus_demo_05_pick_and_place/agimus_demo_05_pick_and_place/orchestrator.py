@@ -129,8 +129,8 @@ class Orchestrator(object):
         self._node = Node("pick_and_place")
         self.param = OrchestratorParams()
 
-        self.source_bin_pose = [-0.22, 0.19, 0.9, 0.0, 0.0, 0.0, 1.0]
-        self.destination_bin_pose = [-0.22, -0.22, 0.9, 0.0, 0.0, 0.0, 1.0]
+        self.source_bin_pose = [0.065, 0.32, 0.9, 0.0, 0.0, 0.0, 1.0]
+        self.destination_bin_pose = [-0.06, -0.14, 0.9, 0.0, 0.0, 0.0, 1.0]
         self.min_opening_for_grasp = 0.01
 
         self.franka_gripper_cient = FrankaGripperClient(self._node)
@@ -250,17 +250,28 @@ class Orchestrator(object):
 
         # this configuration is used as an intermediate configuration above the box, we use it
         #  because it's helps hpp find better planning when doing the picking of the objects in the box.
-        self.q_above_source_bin = [
-            -0.37749851551808805,
-            -0.24527851252273686,
-            0.37860498360790074,
-            -2.390846227478563,
-            0.07986644285218328,
-            2.1525887422066345,
-            0.6495647583792291,
-            0.03897743672132492,
-            0.03897743672132492,
-        ]
+        # self.q_above_source_bin = [
+        #     -0.37749851551808805,
+        #     -0.24527851252273686,
+        #     0.37860498360790074,
+        #     -2.390846227478563,
+        #     0.07986644285218328,
+        #     2.1525887422066345,
+        #     0.6495647583792291,
+        #     0.03897743672132492,
+        #     0.03897743672132492,
+        # ]
+
+        self.q_above_source_bin = [-0.19410566016038255,
+                                   -0.17449177797350365,
+                                   -0.5783743502382646,
+                                   -1.6379523460123524,
+                                   -0.07522495333037531,
+                                   1.5432723644309574,
+                                   0.15966823585828147,
+                                   0.03992434963583946,
+                                   0.03992434963583946,
+                                ]
 
     def set_temporary_hpp_q_init(self, pose, obj_pose):
         """Useful to get correct transformation between robot's frames."""
@@ -516,7 +527,7 @@ class Orchestrator(object):
             # current_robot_q = list(current_robot_state.position)
             # self.set_temporary_hpp_q_init(current_robot_q, self.hpp_client.start_obj_pose)
             # self.hpp_client.robot.setCurrentConfig(current_robot_q)
-            input("Free trajectory finished. Press Enter to grasp...")
+            # input("Free trajectory finished. Press Enter to grasp...")
             self.close_gripper()
             # time.sleep(0.5)
 
