@@ -257,10 +257,13 @@ class Orchestrator(object):
         q_array, dq_array, ddq_array = get_q_dq_ddq_arrays_from_path(
             path_vector, dt=self.trajectory_publisher.dt
         )
+        multiplier = 4
         # add complete horizon at the end of the trajectory of the last point
-        q_array += [q_array[-1]] * self.param.ocp_horizon  # OCP horizon
-        dq_array += [dq_array[-1]] * self.param.ocp_horizon  # OCP horizon
-        ddq_array += [ddq_array[-1]] * self.param.ocp_horizon  # OCP horizon
+        q_array += [q_array[-1]] * multiplier * self.param.ocp_horizon  # OCP horizon
+        dq_array += [dq_array[-1]] * multiplier * self.param.ocp_horizon  # OCP horizon
+        ddq_array += (
+            [ddq_array[-1]] * multiplier * self.param.ocp_horizon
+        )  # OCP horizon
 
         # # TODO: get this from OCP params somehow
         # traj += [

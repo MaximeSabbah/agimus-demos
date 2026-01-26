@@ -6,7 +6,7 @@ running_model:
     costs:
     - name: control_reg
       update: true
-      weight: 0.1
+      weight: 2.0
       active: true
       cost:
         class: CostModelResidual
@@ -14,10 +14,10 @@ running_model:
           class: ActivationModelWeightedQuad
           weights: 1.0
         residual:
-          class: ResidualModelControl
+          class: ResidualModelControlGrav
     - name: state_reg
       update: true
-      weight: 100.0
+      weight: 10.0
       cost:
         class: CostModelResidual
         activation:
@@ -27,7 +27,7 @@ running_model:
           class: ResidualModelState
     - name: goal_tracking
       update: true
-      weight: 100.0
+      weight: 1.0
       cost:
         class: CostModelResidual
         activation:
@@ -46,7 +46,7 @@ terminal_model:
     costs:
     - name: state_reg
       update: true
-      weight: 100.0
+      weight: 1.0
       cost:
         class: CostModelResidual
         activation:
