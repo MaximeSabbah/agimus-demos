@@ -41,7 +41,7 @@
         </geometry>
         <material name="human_obstacle"/>
       </visual>
-      <collision name="obstacle_0">
+      <collision name="obstacle_0_0">
         <geometry>
           <cylinder radius="0.045" length="0.22"/>
         </geometry>
@@ -55,7 +55,7 @@
         </geometry>
         <material name="human_obstacle"/>
       </visual>
-      <collision name="obstacle_1">
+      <collision name="obstacle_1_0">
         <geometry>
           <cylinder radius="0.035" length="0.20"/>
         </geometry>
@@ -69,7 +69,7 @@
         </geometry>
         <material name="human_obstacle"/>
       </visual>
-      <collision name="obstacle_2">
+      <collision name="obstacle_2_0">
         <geometry>
           <cylinder radius="0.03" length="0.12"/>
         </geometry>

@@ -124,27 +124,7 @@ def launch_setup(
         output="both",
         parameters=[get_use_sim_time()],
     )
-    rtcosmik_obstacle_adapter_node = Node(
-        package="agimus_demo_08_collision_avoidance",
-        executable="rtcosmik_obstacle_pose_adapter",
-        name="rtcosmik_obstacle_pose_adapter_node",
-        output="both",
-        parameters=[
-            get_use_sim_time(),
-            {
-                "publish_debug_tf": False,
-                "debug_tf_suffix": "",
-                "force_frame_id": "fer_link0",
-                "fallback_frame_id": "fer_link0",
-                "output_topics": ["obstacle_0_0", "obstacle_1_0", "obstacle_2_0"],
-            },
-        ],
-    )
-    moving_obstacle_provider = (
-        rtcosmik_obstacle_adapter_node
-        if use_rtcosmik_obstacles
-        else obstacle_pose_publisher_node
-    )
+    moving_obstacle_providers = [] if use_rtcosmik_obstacles else [obstacle_pose_publisher_node]
 
     return [
         franka_robot_launch,
@@ -155,7 +135,7 @@ def launch_setup(
                 target_action=wait_for_non_zero_joints_node,
                 on_exit=[
                     agimus_controller_node,
-                    moving_obstacle_provider,
+                    *moving_obstacle_providers,
                 ],
             )
         ),

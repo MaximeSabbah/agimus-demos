@@ -12,8 +12,12 @@ class RTCosmikObstaclePoseAdapter(Node):
         super().__init__("rtcosmik_obstacle_pose_adapter")
 
         self.declare_parameter("input_topic", "/rtcosmik/collision_markers")
-        self.declare_parameter("output_topics", ["obstacle_0", "obstacle_1", "obstacle_2"])
+        self.declare_parameter("output_topics", ["obstacle_0_0", "obstacle_1_0", "obstacle_2_0"])
         self.declare_parameter("marker_ids", [0, 1, 2])
+        self.declare_parameter(
+            "marker_labels",
+            ["right_upperarm", "right_lowerarm", "right_hand"],
+        )
         self.declare_parameter("marker_namespace", "rtcosmik_collision")
         self.declare_parameter("publish_debug_tf", True)
         self.declare_parameter("debug_tf_suffix", "")
@@ -23,6 +27,7 @@ class RTCosmikObstaclePoseAdapter(Node):
         self._input_topic = str(self.get_parameter("input_topic").value)
         self._output_topics = list(self.get_parameter("output_topics").value)
         self._marker_ids = [int(x) for x in self.get_parameter("marker_ids").value]
+        self._marker_labels = list(self.get_parameter("marker_labels").value)
         self._marker_namespace = str(self.get_parameter("marker_namespace").value)
         self._publish_debug_tf = bool(self.get_parameter("publish_debug_tf").value)
         self._debug_tf_suffix = str(self.get_parameter("debug_tf_suffix").value)
@@ -32,6 +37,10 @@ class RTCosmikObstaclePoseAdapter(Node):
         if len(self._output_topics) != len(self._marker_ids):
             raise ValueError(
                 "output_topics and marker_ids must have the same length."
+            )
+        if len(self._marker_labels) != len(self._marker_ids):
+            raise ValueError(
+                "marker_labels and marker_ids must have the same length."
             )
 
         self._publishers = [
@@ -48,9 +57,10 @@ class RTCosmikObstaclePoseAdapter(Node):
             10,
         )
 
+        mapping = list(zip(self._marker_ids, self._marker_labels, self._output_topics))
         self.get_logger().info(
             f"Adapter started. Reading '{self._input_topic}', publishing "
-            f"{list(zip(self._marker_ids, self._output_topics))}."
+            f"(marker_id, label, topic) = {mapping}."
         )
 
     def _markers_cb(self, msg: MarkerArray) -> None:
