@@ -3,6 +3,9 @@
   <material name="blue">
     <color rgba="0.1 0.1 0.8 0.5"/>
   </material>
+  <material name="human_obstacle">
+    <color rgba="0.1 0.6 1.0 0.6"/>
+  </material>
 
   <link name="obstacle">
     <visual>
@@ -23,5 +26,32 @@
     </inertial>
   </link>
 
+  <!-- Dynamic RT-COSMIK obstacles visualized from TF frames obstacle_0/1/2. -->
+  <link name="obstacle_0">
+    <visual>
+      <geometry>
+        <cylinder radius="0.045" length="0.22"/>
+      </geometry>
+      <material name="human_obstacle"/>
+    </visual>
+  </link>
+
+  <link name="obstacle_1">
+    <visual>
+      <geometry>
+        <cylinder radius="0.035" length="0.20"/>
+      </geometry>
+      <material name="human_obstacle"/>
+    </visual>
+  </link>
+
+  <link name="obstacle_2">
+    <visual>
+      <geometry>
+        <cylinder radius="0.03" length="0.12"/>
+      </geometry>
+      <material name="human_obstacle"/>
+    </visual>
+  </link>
 
 </robot>

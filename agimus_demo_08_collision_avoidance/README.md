@@ -48,3 +48,18 @@ Expected result: Robot moving left and right with a virtual sphere in the center
 ### Position of the sphere
 
 Position of the sphere is published by a [obstacle_pose_publisher](./agimus_demo_08_collision_avoidance/obstacle_pose_publisher.py) node. Currently poses of the obstacles are fixed in place by this node. In case dynamic obstacles are expected this node has to be reimplemented to support motion capture or a fixed schedule movement of the obstacle.
+
+### RT-COSMIK moving obstacles
+
+This demo can also consume RT-COSMIK collision capsules (`/rtcosmik/collision_markers`) and map them to moving geometries used by the controller (`obstacle_0`, `obstacle_1`, `obstacle_2`).
+
+Launch with:
+
+```bash
+ros2 launch agimus_demo_08_collision_avoidance bringup.launch.py use_rtcosmik_obstacles:=true
+```
+
+In this mode:
+- `agimus_controller_params_rtcosmik.yaml` is used.
+- The node `rtcosmik_obstacle_pose_adapter` replaces `obstacle_pose_publisher`.
+- RViz environment model contains links `obstacle_0`, `obstacle_1`, `obstacle_2` that follow the incoming RT-COSMIK obstacle poses.

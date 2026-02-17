@@ -1,8 +1,9 @@
 from launch import LaunchContext, LaunchDescription
+from launch.actions import DeclareLaunchArgument
 from launch.actions import OpaqueFunction, RegisterEventHandler, TimerAction
 from launch.event_handlers import OnProcessExit, OnProcessStart
 from launch.launch_description_entity import LaunchDescriptionEntity
-from launch.substitutions import PathJoinSubstitution
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 from launch_ros.parameter_descriptions import ParameterFile, ParameterValue
@@ -18,6 +19,15 @@ from agimus_demos_common.launch_utils import (
 def launch_setup(
     context: LaunchContext, *args, **kwargs
 ) -> list[LaunchDescriptionEntity]:
+    use_rtcosmik_obstacles = (
+        LaunchConfiguration("use_rtcosmik_obstacles").perform(context).lower() == "true"
+    )
+    controller_params_file = (
+        "agimus_controller_params_rtcosmik.yaml"
+        if use_rtcosmik_obstacles
+        else "agimus_controller_params.yaml"
+    )
+
     rviz_config_path = PathJoinSubstitution(
         [
             FindPackageShare("agimus_demo_08_collision_avoidance"),
@@ -42,7 +52,7 @@ def launch_setup(
         [
             FindPackageShare("agimus_demo_08_collision_avoidance"),
             "config",
-            "agimus_controller_params.yaml",
+            controller_params_file,
         ]
     )
 
@@ -110,6 +120,25 @@ def launch_setup(
         output="both",
         parameters=[get_use_sim_time()],
     )
+    rtcosmik_obstacle_adapter_node = Node(
+        package="agimus_demo_08_collision_avoidance",
+        executable="rtcosmik_obstacle_pose_adapter",
+        name="rtcosmik_obstacle_pose_adapter_node",
+        output="both",
+        parameters=[
+            get_use_sim_time(),
+            {
+                "debug_tf_suffix": "",
+                "force_frame_id": "fer_link0",
+                "fallback_frame_id": "fer_link0",
+            },
+        ],
+    )
+    moving_obstacle_provider = (
+        rtcosmik_obstacle_adapter_node
+        if use_rtcosmik_obstacles
+        else obstacle_pose_publisher_node
+    )
 
     return [
         franka_robot_launch,
@@ -120,7 +149,7 @@ def launch_setup(
                 target_action=wait_for_non_zero_joints_node,
                 on_exit=[
                     agimus_controller_node,
-                    obstacle_pose_publisher_node,
+                    moving_obstacle_provider,
                 ],
             )
         ),
@@ -138,5 +167,16 @@ def launch_setup(
 
 def generate_launch_description():
     return LaunchDescription(
-        generate_default_franka_args() + [OpaqueFunction(function=launch_setup)]
+        generate_default_franka_args()
+        + [
+            DeclareLaunchArgument(
+                "use_rtcosmik_obstacles",
+                default_value="false",
+                description=(
+                    "Use RT-COSMIK collision capsules as moving obstacles "
+                    "instead of the static demo obstacle publisher."
+                ),
+            ),
+            OpaqueFunction(function=launch_setup),
+        ]
     )

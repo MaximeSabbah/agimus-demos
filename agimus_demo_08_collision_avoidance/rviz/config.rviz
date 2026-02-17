@@ -212,6 +212,21 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        obstacle_0:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        obstacle_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        obstacle_2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
       Mass Properties:
         Inertia: false
         Mass: false
