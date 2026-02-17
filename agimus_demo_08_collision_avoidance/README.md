@@ -51,7 +51,7 @@ Position of the sphere is published by a [obstacle_pose_publisher](./agimus_demo
 
 ### RT-COSMIK moving obstacles
 
-This demo can also consume RT-COSMIK collision capsules (`/rtcosmik/collision_markers`) and map them to moving geometries used by the controller (`obstacle_0`, `obstacle_1`, `obstacle_2`).
+This demo can also consume RT-COSMIK collision capsules (`/rtcosmik/collision_markers`) and map them to moving geometries used by the controller (`obstacle_0_0`, `obstacle_1_0`, `obstacle_2_0`).
 
 Launch with:
 
@@ -62,4 +62,4 @@ ros2 launch agimus_demo_08_collision_avoidance bringup.launch.py use_rtcosmik_ob
 In this mode:
 - `agimus_controller_params_rtcosmik.yaml` is used.
 - The node `rtcosmik_obstacle_pose_adapter` replaces `obstacle_pose_publisher`.
-- RViz environment model contains links `obstacle_0`, `obstacle_1`, `obstacle_2` that follow the incoming RT-COSMIK obstacle poses.
+- RViz environment model contains links `obstacle_0`, `obstacle_1`, `obstacle_2` and the controller consumes moving geometry topics `obstacle_0_0`, `obstacle_1_0`, `obstacle_2_0`.

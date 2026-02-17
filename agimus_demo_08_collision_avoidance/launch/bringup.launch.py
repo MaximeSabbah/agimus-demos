@@ -136,6 +136,7 @@ def launch_setup(
                 "debug_tf_suffix": "",
                 "force_frame_id": "fer_link0",
                 "fallback_frame_id": "fer_link0",
+                "output_topics": ["obstacle_0_0", "obstacle_1_0", "obstacle_2_0"],
             },
         ],
     )
