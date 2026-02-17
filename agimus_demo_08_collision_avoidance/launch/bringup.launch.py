@@ -19,8 +19,9 @@ from agimus_demos_common.launch_utils import (
 def launch_setup(
     context: LaunchContext, *args, **kwargs
 ) -> list[LaunchDescriptionEntity]:
+    use_rtcosmik_obstacles_cfg = LaunchConfiguration("use_rtcosmik_obstacles")
     use_rtcosmik_obstacles = (
-        LaunchConfiguration("use_rtcosmik_obstacles").perform(context).lower() == "true"
+        use_rtcosmik_obstacles_cfg.perform(context).lower() == "true"
     )
     controller_params_file = (
         "agimus_controller_params_rtcosmik.yaml"
@@ -79,6 +80,9 @@ def launch_setup(
                         "environment.urdf.xacro",
                     ]
                 ),
+                " ",
+                "use_rtcosmik_obstacles:=",
+                use_rtcosmik_obstacles_cfg,
             ]
         ),
         value_type=str,
@@ -128,6 +132,7 @@ def launch_setup(
         parameters=[
             get_use_sim_time(),
             {
+                "publish_debug_tf": False,
                 "debug_tf_suffix": "",
                 "force_frame_id": "fer_link0",
                 "fallback_frame_id": "fer_link0",
