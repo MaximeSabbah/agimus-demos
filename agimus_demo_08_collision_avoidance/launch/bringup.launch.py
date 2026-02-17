@@ -14,6 +14,9 @@ from agimus_demos_common.launch_utils import (
     generate_include_launch,
     get_use_sim_time,
 )
+from agimus_demos_common.static_transform_publisher_node import (
+    static_transform_publisher_node,
+)
 
 
 def launch_setup(
@@ -22,6 +25,16 @@ def launch_setup(
     use_rtcosmik_obstacles_cfg = LaunchConfiguration("use_rtcosmik_obstacles")
     use_rtcosmik_obstacles = (
         use_rtcosmik_obstacles_cfg.perform(context).lower() == "true"
+    )
+    publish_world_frame_bridge_cfg = LaunchConfiguration("publish_world_frame_bridge")
+    publish_world_frame_bridge = (
+        publish_world_frame_bridge_cfg.perform(context).lower() == "true"
+    )
+    publish_obstacle_root_bridge_cfg = LaunchConfiguration(
+        "publish_obstacle_root_bridge"
+    )
+    publish_obstacle_root_bridge = (
+        publish_obstacle_root_bridge_cfg.perform(context).lower() == "true"
     )
     controller_params_file = (
         "agimus_controller_params_rtcosmik.yaml"
@@ -135,8 +148,16 @@ def launch_setup(
         parameters=[get_use_sim_time()],
     )
     moving_obstacle_providers = [] if use_rtcosmik_obstacles else [obstacle_pose_publisher_node]
+    world_frame_bridge_node = static_transform_publisher_node(
+        frame_id="fer_link0",
+        child_frame_id="world",
+    )
+    obstacle_root_bridge_node = static_transform_publisher_node(
+        frame_id="fer_link0",
+        child_frame_id="obstacle_root",
+    )
 
-    return [
+    nodes = [
         franka_robot_launch,
         environment_publisher_node,
         wait_for_non_zero_joints_node,
@@ -159,6 +180,11 @@ def launch_setup(
             )
         ),
     ]
+    if publish_world_frame_bridge:
+        nodes.append(world_frame_bridge_node)
+    if use_rtcosmik_obstacles and publish_obstacle_root_bridge:
+        nodes.append(obstacle_root_bridge_node)
+    return nodes
 
 
 def generate_launch_description():
@@ -171,6 +197,22 @@ def generate_launch_description():
                 description=(
                     "Use RT-COSMIK collision capsules as moving obstacles "
                     "instead of the static demo obstacle publisher."
+                ),
+            ),
+            DeclareLaunchArgument(
+                "publish_world_frame_bridge",
+                default_value="true",
+                description=(
+                    "Publish a static identity transform from fer_link0 to world "
+                    "to bridge RT-COSMIK world-framed data with demo frames."
+                ),
+            ),
+            DeclareLaunchArgument(
+                "publish_obstacle_root_bridge",
+                default_value="true",
+                description=(
+                    "Publish a static identity transform from fer_link0 to obstacle_root "
+                    "to connect the RT-COSMIK environment robot_state_publisher tree."
                 ),
             ),
             OpaqueFunction(function=launch_setup),
