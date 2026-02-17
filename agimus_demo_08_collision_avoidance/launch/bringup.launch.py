@@ -28,6 +28,15 @@ def launch_setup(
         if use_rtcosmik_obstacles
         else "agimus_controller_params.yaml"
     )
+    obstacle_pose_remappings = (
+        [
+            ("obstacle_0_0", "/rtcosmik/collision_pose/right_upperarm"),
+            ("obstacle_1_0", "/rtcosmik/collision_pose/right_lowerarm"),
+            ("obstacle_2_0", "/rtcosmik/collision_pose/right_hand"),
+        ]
+        if use_rtcosmik_obstacles
+        else []
+    )
 
     rviz_config_path = PathJoinSubstitution(
         [
@@ -65,7 +74,8 @@ def launch_setup(
             agimus_controller_params,
         ],
         output="screen",
-        remappings=[("robot_description", "/robot_description_with_collision")],
+        remappings=[("robot_description", "/robot_description_with_collision")]
+        + obstacle_pose_remappings,
     )
 
     environment_description = ParameterValue(
