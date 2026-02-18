@@ -2,7 +2,7 @@ import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Pose, Transform, TransformStamped, Vector3
 from tf2_ros import TransformBroadcaster
-from visualization_msgs.msg import MarkerArray
+from visualization_msgs.msg import Marker, MarkerArray
 
 
 class RTCosmikObstaclePoseAdapter(Node):
@@ -20,6 +20,8 @@ class RTCosmikObstaclePoseAdapter(Node):
         )
         self.declare_parameter("marker_namespace", "rtcosmik_collision")
         self.declare_parameter("publish_debug_tf", True)
+        self.declare_parameter("publish_debug_markers", True)
+        self.declare_parameter("debug_markers_topic", "/rtcosmik/obstacle_debug_markers")
         self.declare_parameter("debug_tf_suffix", "")
         self.declare_parameter("force_frame_id", "")
         self.declare_parameter("fallback_frame_id", "fer_link0")
@@ -30,6 +32,12 @@ class RTCosmikObstaclePoseAdapter(Node):
         self._marker_labels = list(self.get_parameter("marker_labels").value)
         self._marker_namespace = str(self.get_parameter("marker_namespace").value)
         self._publish_debug_tf = bool(self.get_parameter("publish_debug_tf").value)
+        self._publish_debug_markers = bool(
+            self.get_parameter("publish_debug_markers").value
+        )
+        self._debug_markers_topic = str(
+            self.get_parameter("debug_markers_topic").value
+        )
         self._debug_tf_suffix = str(self.get_parameter("debug_tf_suffix").value)
         self._force_frame_id = str(self.get_parameter("force_frame_id").value)
         self._fallback_frame_id = str(self.get_parameter("fallback_frame_id").value)
@@ -50,6 +58,11 @@ class RTCosmikObstaclePoseAdapter(Node):
         self._last_frame_ids = {mid: self._fallback_frame_id for mid in self._marker_ids}
 
         self._tf_broadcaster = TransformBroadcaster(self) if self._publish_debug_tf else None
+        self._debug_markers_pub = (
+            self.create_publisher(MarkerArray, self._debug_markers_topic, 10)
+            if self._publish_debug_markers
+            else None
+        )
         self._subscriber = self.create_subscription(
             MarkerArray,
             self._input_topic,
@@ -107,6 +120,44 @@ class RTCosmikObstaclePoseAdapter(Node):
                     rotation=pose.orientation,
                 )
                 self._tf_broadcaster.sendTransform(transform)
+
+        if self._debug_markers_pub is not None:
+            marker_array = MarkerArray()
+            # Diameter (x,y) and length (z), matching environment.xacro cylinders.
+            scales = {
+                0: (0.09, 0.09, 0.22),
+                1: (0.07, 0.07, 0.20),
+                2: (0.06, 0.06, 0.12),
+            }
+            colors = {
+                0: (1.0, 0.2, 0.2, 0.8),
+                1: (0.2, 1.0, 0.2, 0.8),
+                2: (0.2, 0.4, 1.0, 0.8),
+            }
+            for marker_id in self._marker_ids:
+                pose = self._last_poses.get(marker_id)
+                if pose is None:
+                    continue
+                frame_id = self._last_frame_ids.get(marker_id, self._fallback_frame_id)
+                sx, sy, sz = scales.get(marker_id, (0.08, 0.08, 0.15))
+                r, g, b, a = colors.get(marker_id, (0.9, 0.9, 0.9, 0.8))
+                marker = Marker()
+                marker.header.stamp = self.get_clock().now().to_msg()
+                marker.header.frame_id = frame_id
+                marker.ns = "agimus_rtcosmik_obstacle_debug"
+                marker.id = marker_id
+                marker.type = Marker.CYLINDER
+                marker.action = Marker.ADD
+                marker.pose = pose
+                marker.scale.x = sx
+                marker.scale.y = sy
+                marker.scale.z = sz
+                marker.color.r = r
+                marker.color.g = g
+                marker.color.b = b
+                marker.color.a = a
+                marker_array.markers.append(marker)
+            self._debug_markers_pub.publish(marker_array)
 
 
 def main(args=None):

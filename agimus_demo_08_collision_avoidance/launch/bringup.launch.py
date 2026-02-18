@@ -147,6 +147,13 @@ def launch_setup(
         output="both",
         parameters=[get_use_sim_time()],
     )
+    rtcosmik_pose_debug_markers_node = Node(
+        package="agimus_demo_08_collision_avoidance",
+        executable="rtcosmik_pose_debug_markers",
+        name="rtcosmik_pose_debug_markers_node",
+        output="screen",
+        parameters=[get_use_sim_time()],
+    )
     moving_obstacle_providers = [] if use_rtcosmik_obstacles else [obstacle_pose_publisher_node]
     world_frame_bridge_node = static_transform_publisher_node(
         frame_id="fer_link0",
@@ -184,6 +191,8 @@ def launch_setup(
         nodes.append(world_frame_bridge_node)
     if use_rtcosmik_obstacles and publish_obstacle_root_bridge:
         nodes.append(obstacle_root_bridge_node)
+    if use_rtcosmik_obstacles:
+        nodes.append(rtcosmik_pose_debug_markers_node)
     return nodes
 
 

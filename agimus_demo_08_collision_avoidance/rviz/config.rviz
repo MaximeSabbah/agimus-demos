@@ -259,6 +259,78 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /rtcosmik/markers
       Value: true
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: true
+      Name: RTCosmik Obstacle Debug
+      Namespaces:
+        {}
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /rtcosmik/obstacle_debug_markers
+      Value: true
+    - Alpha: 1
+      Axes Length: 0.15000000596046448
+      Axes Radius: 0.012000000104308128
+      Class: rviz_default_plugins/Pose
+      Color: 255; 80; 80
+      Enabled: true
+      Head Length: 0.05000000074505806
+      Head Radius: 0.02500000037252903
+      Name: RTCosmik Pose right_upperarm
+      Shaft Length: 0.10000000149011612
+      Shaft Radius: 0.00800000037997961
+      Shape: Axes
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /rtcosmik/collision_pose/right_upperarm
+      Value: true
+    - Alpha: 1
+      Axes Length: 0.15000000596046448
+      Axes Radius: 0.012000000104308128
+      Class: rviz_default_plugins/Pose
+      Color: 80; 255; 80
+      Enabled: true
+      Head Length: 0.05000000074505806
+      Head Radius: 0.02500000037252903
+      Name: RTCosmik Pose right_lowerarm
+      Shaft Length: 0.10000000149011612
+      Shaft Radius: 0.00800000037997961
+      Shape: Axes
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /rtcosmik/collision_pose/right_lowerarm
+      Value: true
+    - Alpha: 1
+      Axes Length: 0.15000000596046448
+      Axes Radius: 0.012000000104308128
+      Class: rviz_default_plugins/Pose
+      Color: 80; 80; 255
+      Enabled: true
+      Head Length: 0.05000000074505806
+      Head Radius: 0.02500000037252903
+      Name: RTCosmik Pose right_hand
+      Shaft Length: 0.10000000149011612
+      Shaft Radius: 0.00800000037997961
+      Shape: Axes
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /rtcosmik/collision_pose/right_hand
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48

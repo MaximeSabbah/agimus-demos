@@ -63,3 +63,13 @@ In this mode:
 - `agimus_controller_params_rtcosmik.yaml` is used.
 - The node `rtcosmik_obstacle_pose_adapter` replaces `obstacle_pose_publisher`.
 - RViz environment model contains links `obstacle_0`, `obstacle_1`, `obstacle_2` and the controller consumes moving geometry topics `obstacle_0_0`, `obstacle_1_0`, `obstacle_2_0`.
+
+
+export ROS_DOMAIN_ID=29
+export ROS_LOCALHOST_ONLY=0
+export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+export FASTDDS_BUILTIN_TRANSPORTS=UDPv4
+
+ros2 launch agimus_demo_08_collision_avoidance bringup.launch.py   use_gazebo:=true use_rviz:=true use_rtcosmik_obstacles:=true publish_obstacle_root_bridge:=true
+
+ros2 launch rtcosmik_ros start.launch.py cam_calib_path:="/root/workspace/RT-COSMIK/config/cam_params"
