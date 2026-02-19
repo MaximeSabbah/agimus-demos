@@ -47,6 +47,138 @@ running_model:
         residual:
           class: ResidualModelFrameRotationStatic
           frame_id: fer_hand
+    - name: collision_cost_1
+      update: false
+      weight: 1000.0
+      cost:
+        class: CostModelResidual
+        activation:
+          class: ActivationModelQuadExp
+          alpha: 1e-4
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_hand_sc_capsule_0, obstacle_0_0]
+    - name: collision_cost_2
+      update: false
+      weight: 1000.0
+      cost:
+        class: CostModelResidual
+        activation:
+          class: ActivationModelQuadExp
+          alpha: 1e-4
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_hand_sc_capsule_0, obstacle_1_0]
+    - name: collision_cost_3
+      update: false
+      weight: 1000.0
+      cost:
+        class: CostModelResidual
+        activation:
+          class: ActivationModelQuadExp
+          alpha: 1e-4
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_hand_sc_capsule_0, obstacle_2_0]
+    - name: collision_cost_4
+      update: false
+      weight: 1000.0
+      cost:
+        class: CostModelResidual
+        activation:
+          class: ActivationModelQuadExp
+          alpha: 1e-4
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_hand_sc_capsule_1, obstacle_0_0]
+    - name: collision_cost_5
+      update: false
+      weight: 1000.0
+      cost:
+        class: CostModelResidual
+        activation:
+          class: ActivationModelQuadExp
+          alpha: 1e-4
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_hand_sc_capsule_1, obstacle_1_0]
+    - name: collision_cost_6
+      update: false
+      weight: 1000.0
+      cost:
+        class: CostModelResidual
+        activation:
+          class: ActivationModelQuadExp
+          alpha: 1e-4
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_hand_sc_capsule_1, obstacle_2_0]
+    - name: collision_cost_7
+      update: false
+      weight: 1000.0
+      cost:
+        class: CostModelResidual
+        activation:
+          class: ActivationModelQuadExp
+          alpha: 1e-4
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_link7_sc_capsule_0, obstacle_0_0]
+    - name: collision_cost_8
+      update: false
+      weight: 1000.0
+      cost:
+        class: CostModelResidual
+        activation:
+          class: ActivationModelQuadExp
+          alpha: 1e-4
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_link7_sc_capsule_0, obstacle_1_0]
+    - name: collision_cost_9
+      update: false
+      weight: 1000.0
+      cost:
+        class: CostModelResidual
+        activation:
+          class: ActivationModelQuadExp
+          alpha: 1e-4
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_link7_sc_capsule_0, obstacle_2_0]
+    - name: collision_cost_10
+      update: false
+      weight: 1000.0
+      cost:
+        class: CostModelResidual
+        activation:
+          class: ActivationModelQuadExp
+          alpha: 1e-4
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_link7_sc_capsule_1, obstacle_0_0]
+    - name: collision_cost_11
+      update: false
+      weight: 1000.0
+      cost:
+        class: CostModelResidual
+        activation:
+          class: ActivationModelQuadExp
+          alpha: 1e-4
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_link7_sc_capsule_1, obstacle_1_0]
+    - name: collision_cost_12
+      update: false
+      weight: 1000.0
+      cost:
+        class: CostModelResidual
+        activation:
+          class: ActivationModelQuadExp
+          alpha: 1e-4
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_link7_sc_capsule_1, obstacle_2_0]
     constraints:
     - name: collision_1
       active: true
@@ -194,6 +326,138 @@ terminal_model:
         residual:
           class: ResidualModelFrameRotationStatic
           frame_id: fer_hand
+    - name: collision_cost_1
+      update: false
+      weight: 100.0
+      cost:
+        class: CostModelResidual
+        activation:
+          class: ActivationModelQuadExp
+          alpha: 1e-4
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_hand_sc_capsule_0, obstacle_0_0]
+    - name: collision_cost_2
+      update: false
+      weight: 100.0
+      cost:
+        class: CostModelResidual
+        activation:
+          class: ActivationModelQuadExp
+          alpha: 1e-4
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_hand_sc_capsule_0, obstacle_1_0]
+    - name: collision_cost_3
+      update: false
+      weight: 100.0
+      cost:
+        class: CostModelResidual
+        activation:
+          class: ActivationModelQuadExp
+          alpha: 1e-4
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_hand_sc_capsule_0, obstacle_2_0]
+    - name: collision_cost_4
+      update: false
+      weight: 100.0
+      cost:
+        class: CostModelResidual
+        activation:
+          class: ActivationModelQuadExp
+          alpha: 1e-4
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_hand_sc_capsule_1, obstacle_0_0]
+    - name: collision_cost_5
+      update: false
+      weight: 100.0
+      cost:
+        class: CostModelResidual
+        activation:
+          class: ActivationModelQuadExp
+          alpha: 1e-4
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_hand_sc_capsule_1, obstacle_1_0]
+    - name: collision_cost_6
+      update: false
+      weight: 100.0
+      cost:
+        class: CostModelResidual
+        activation:
+          class: ActivationModelQuadExp
+          alpha: 1e-4
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_hand_sc_capsule_1, obstacle_2_0]
+    - name: collision_cost_7
+      update: false
+      weight: 100.0
+      cost:
+        class: CostModelResidual
+        activation:
+          class: ActivationModelQuadExp
+          alpha: 1e-4
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_link7_sc_capsule_0, obstacle_0_0]
+    - name: collision_cost_8
+      update: false
+      weight: 100.0
+      cost:
+        class: CostModelResidual
+        activation:
+          class: ActivationModelQuadExp
+          alpha: 1e-4
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_link7_sc_capsule_0, obstacle_1_0]
+    - name: collision_cost_9
+      update: false
+      weight: 100.0
+      cost:
+        class: CostModelResidual
+        activation:
+          class: ActivationModelQuadExp
+          alpha: 1e-4
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_link7_sc_capsule_0, obstacle_2_0]
+    - name: collision_cost_10
+      update: false
+      weight: 100.0
+      cost:
+        class: CostModelResidual
+        activation:
+          class: ActivationModelQuadExp
+          alpha: 1e-4
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_link7_sc_capsule_1, obstacle_0_0]
+    - name: collision_cost_11
+      update: false
+      weight: 100.0
+      cost:
+        class: CostModelResidual
+        activation:
+          class: ActivationModelQuadExp
+          alpha: 1e-4
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_link7_sc_capsule_1, obstacle_1_0]
+    - name: collision_cost_12
+      update: false
+      weight: 100.0
+      cost:
+        class: CostModelResidual
+        activation:
+          class: ActivationModelQuadExp
+          alpha: 1e-4
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_link7_sc_capsule_1, obstacle_2_0]
     constraints:
     - name: collision_1
       active: true
