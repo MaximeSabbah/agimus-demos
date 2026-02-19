@@ -19,7 +19,7 @@ agimus_controller_node:
     collision_as_capsule: true
     self_collision: false
     publish_buffer_size: true
-    collision_pairs_names: [cp_1, cp_2, cp_3]
+    collision_pairs_names: [cp_1, cp_2, cp_3, cp_4, cp_5, cp_6, cp_7, cp_8, cp_9, cp_10, cp_11, cp_12]
     cp_1:
       first: fer_hand_sc_capsule_0
       second: obstacle_0_0
@@ -28,6 +28,33 @@ agimus_controller_node:
       second: obstacle_1_0
     cp_3:
       first: fer_hand_sc_capsule_0
+      second: obstacle_2_0
+    cp_4:
+      first: fer_hand_sc_capsule_1
+      second: obstacle_0_0
+    cp_5:
+      first: fer_hand_sc_capsule_1
+      second: obstacle_1_0
+    cp_6:
+      first: fer_hand_sc_capsule_1
+      second: obstacle_2_0
+    cp_7:
+      first: fer_link7_sc_capsule_0
+      second: obstacle_0_0
+    cp_8:
+      first: fer_link7_sc_capsule_0
+      second: obstacle_1_0
+    cp_9:
+      first: fer_link7_sc_capsule_0
+      second: obstacle_2_0
+    cp_10:
+      first: fer_link7_sc_capsule_1
+      second: obstacle_0_0
+    cp_11:
+      first: fer_link7_sc_capsule_1
+      second: obstacle_1_0
+    cp_12:
+      first: fer_link7_sc_capsule_1
       second: obstacle_2_0
     moving_geometries_names: [obstacle_0_0, obstacle_1_0, obstacle_2_0]
     robot_attachment_frame: universe

@@ -75,6 +75,87 @@ running_model:
         residual:
           class: ResidualDistanceCollision2
           collision_pair: [fer_hand_sc_capsule_0, obstacle_2_0]
+    - name: collision_4
+      active: true
+      constraint:
+        class: ConstraintModelResidual
+        lower: 0.03
+        upper: inf
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_hand_sc_capsule_1, obstacle_0_0]
+    - name: collision_5
+      active: true
+      constraint:
+        class: ConstraintModelResidual
+        lower: 0.03
+        upper: inf
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_hand_sc_capsule_1, obstacle_1_0]
+    - name: collision_6
+      active: true
+      constraint:
+        class: ConstraintModelResidual
+        lower: 0.03
+        upper: inf
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_hand_sc_capsule_1, obstacle_2_0]
+    - name: collision_7
+      active: true
+      constraint:
+        class: ConstraintModelResidual
+        lower: 0.03
+        upper: inf
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_link7_sc_capsule_0, obstacle_0_0]
+    - name: collision_8
+      active: true
+      constraint:
+        class: ConstraintModelResidual
+        lower: 0.03
+        upper: inf
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_link7_sc_capsule_0, obstacle_1_0]
+    - name: collision_9
+      active: true
+      constraint:
+        class: ConstraintModelResidual
+        lower: 0.03
+        upper: inf
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_link7_sc_capsule_0, obstacle_2_0]
+    - name: collision_10
+      active: true
+      constraint:
+        class: ConstraintModelResidual
+        lower: 0.03
+        upper: inf
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_link7_sc_capsule_1, obstacle_0_0]
+    - name: collision_11
+      active: true
+      constraint:
+        class: ConstraintModelResidual
+        lower: 0.03
+        upper: inf
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_link7_sc_capsule_1, obstacle_1_0]
+    - name: collision_12
+      active: true
+      constraint:
+        class: ConstraintModelResidual
+        lower: 0.03
+        upper: inf
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_link7_sc_capsule_1, obstacle_2_0]
 
 terminal_model:
   class: IntegratedActionModelEuler
@@ -141,3 +222,84 @@ terminal_model:
         residual:
           class: ResidualDistanceCollision2
           collision_pair: [fer_hand_sc_capsule_0, obstacle_2_0]
+    - name: collision_4
+      active: true
+      constraint:
+        class: ConstraintModelResidual
+        lower: 0.03
+        upper: inf
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_hand_sc_capsule_1, obstacle_0_0]
+    - name: collision_5
+      active: true
+      constraint:
+        class: ConstraintModelResidual
+        lower: 0.03
+        upper: inf
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_hand_sc_capsule_1, obstacle_1_0]
+    - name: collision_6
+      active: true
+      constraint:
+        class: ConstraintModelResidual
+        lower: 0.03
+        upper: inf
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_hand_sc_capsule_1, obstacle_2_0]
+    - name: collision_7
+      active: true
+      constraint:
+        class: ConstraintModelResidual
+        lower: 0.03
+        upper: inf
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_link7_sc_capsule_0, obstacle_0_0]
+    - name: collision_8
+      active: true
+      constraint:
+        class: ConstraintModelResidual
+        lower: 0.03
+        upper: inf
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_link7_sc_capsule_0, obstacle_1_0]
+    - name: collision_9
+      active: true
+      constraint:
+        class: ConstraintModelResidual
+        lower: 0.03
+        upper: inf
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_link7_sc_capsule_0, obstacle_2_0]
+    - name: collision_10
+      active: true
+      constraint:
+        class: ConstraintModelResidual
+        lower: 0.03
+        upper: inf
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_link7_sc_capsule_1, obstacle_0_0]
+    - name: collision_11
+      active: true
+      constraint:
+        class: ConstraintModelResidual
+        lower: 0.03
+        upper: inf
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_link7_sc_capsule_1, obstacle_1_0]
+    - name: collision_12
+      active: true
+      constraint:
+        class: ConstraintModelResidual
+        lower: 0.03
+        upper: inf
+        residual:
+          class: ResidualDistanceCollision2
+          collision_pair: [fer_link7_sc_capsule_1, obstacle_2_0]
