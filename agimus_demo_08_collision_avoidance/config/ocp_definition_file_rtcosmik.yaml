@@ -27,7 +27,7 @@ running_model:
           class: ResidualModelState
     - name: target_pose_tracking
       update: true
-      weight: 1.0
+      weight: 10.0
       cost:
         class: CostModelResidual
         activation:
@@ -38,7 +38,7 @@ running_model:
           frame_id: fer_hand
     - name: target_rotation_tracking
       update: true
-      weight: 1.0
+      weight: 10.0
       cost:
         class: CostModelResidual
         activation:

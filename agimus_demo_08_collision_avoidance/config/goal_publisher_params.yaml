@@ -7,14 +7,14 @@ goal_publisher_node:
       publish_target_marker: true
       marker_size: 0.01
       marker_color: [1.0, 0.0, 0.0, 0.5]
-    ocp_dt: 0.01
-    ocp_buffer_size: 100
+    ocp_dt: 0.02
+    ocp_buffer_size: 50
     target_poses_names: [pose_left, pose_right]
     pose_left:
-      translation: [0.3, 0.0, 0.50]
+      translation: [0.3, 0.0, 0.45]
       rotation: [1.0, 0.0, 0.0, 0.0]
     pose_right:
-      translation: [0.8, 0.0, 0.60]
+      translation: [0.6, 0.0, 0.45]
       rotation: [1.0, 0.0, 0.0, 0.0]
     # Configuration measured manually, corresponding to robot being in between left and right poses
     joint_reg_pose: [0.038, -0.273, -0.052, -2.048, 0.0029, 1.86, 0.71]
