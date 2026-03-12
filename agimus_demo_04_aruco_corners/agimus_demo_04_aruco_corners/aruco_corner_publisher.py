@@ -32,6 +32,7 @@ from geometry_msgs.msg import TransformStamped
 from ros2_aruco_interfaces.msg import ArucoMarkers
 from std_srvs.srv import Trigger
 import tf2_ros
+from visualization_msgs.msg import Marker
 
 from agimus_controller.trajectory import (
     TrajectoryPoint,
@@ -40,6 +41,7 @@ from agimus_controller.trajectory import (
 )
 from agimus_controller_ros.ros_utils import (
     get_params_from_node,
+    transform_msg_to_se3,
     weighted_traj_point_to_mpc_msg,
 )
 from agimus_controller_ros.simple_trajectory_publisher import TrajectoryPublisherBase
@@ -93,7 +95,7 @@ class ArucoCornerPublisher(TrajectoryPublisherBase):
         self.declare_parameter("dwell_time", 5.0)
         # Real-robot ArUco detection parameters
         self.declare_parameter("use_aruco_detection", False)
-        self.declare_parameter("target_marker_id", 20)
+        self.declare_parameter("target_marker_id", 0)
 
         marker_size = self.get_parameter("marker_size").value
         approach_z = self.get_parameter("approach_z_offset").value
@@ -216,10 +218,18 @@ class ArucoCornerPublisher(TrajectoryPublisherBase):
             ),
         )
 
+        # TF buffer for target visualization (world-frame corner pose)
+        self._tf_buffer = tf2_ros.Buffer()
+        self._tf_listener = tf2_ros.TransformListener(self._tf_buffer, self)
+
+        # Publisher for RViz target sphere
+        self._target_marker_pub = self.create_publisher(Marker, "~/target_marker", 10)
+
         if self._use_aruco_detection:
             self._tf_broadcaster = tf2_ros.TransformBroadcaster(self)
             self._last_aruco_tf: TransformStamped | None = None
             self._marker_detected = False
+            self._demo_started = False
             self.create_subscription(ArucoMarkers, "/aruco_markers", self._aruco_callback, 10)
             self.get_logger().info(
                 f"ArUco detection enabled — subscribing to /aruco_markers "
@@ -228,6 +238,7 @@ class ArucoCornerPublisher(TrajectoryPublisherBase):
             )
         else:
             self._marker_detected = True
+            self._demo_started = False
 
         self._next_corner_srv = self.create_service(
             Trigger, "~/next_corner", self._next_corner_callback
@@ -291,8 +302,17 @@ class ArucoCornerPublisher(TrajectoryPublisherBase):
             self.get_logger().info(f"Advancing to corner {self._phase.value}.")
 
     def _next_corner_callback(self, request, response):
-        """Service handler: immediately advance to the next corner (or neutral/done)."""
-        if self._phase == Phase.DONE:
+        """Service handler: start the demo or advance to the next corner."""
+        if not self._demo_started:
+            if not self._marker_detected:
+                response.success = False
+                response.message = "Cannot start: ArUco marker not detected yet."
+            else:
+                self._demo_started = True
+                self.get_logger().info("Demo started by user. Moving to CORNER_0.")
+                response.success = True
+                response.message = "Demo started. Moving to CORNER_0."
+        elif self._phase == Phase.DONE:
             response.success = False
             response.message = "Demo already complete."
         else:
@@ -305,6 +325,36 @@ class ArucoCornerPublisher(TrajectoryPublisherBase):
     # ------------------------------------------------------------------
     # Publishing
     # ------------------------------------------------------------------
+
+    def _publish_target_marker(self):
+        """Publish a sphere in RViz at the current corner target in fer_link0 frame."""
+        if self._phase not in (Phase.CORNER_0, Phase.CORNER_1, Phase.CORNER_2, Phase.CORNER_3):
+            return
+        try:
+            t = self._tf_buffer.lookup_transform(
+                "fer_link0", "aruco_marker", rclpy.time.Time()
+            )
+        except Exception:
+            return
+        wMmarker = transform_msg_to_se3(t.transform)
+        wMcorner = wMmarker * self._corners[self._phase.value]
+
+        m = Marker()
+        m.header.frame_id = "fer_link0"
+        m.header.stamp = self.get_clock().now().to_msg()
+        m.ns = "target"
+        m.id = 0
+        m.type = Marker.SPHERE
+        m.action = Marker.ADD
+        m.pose.position.x = wMcorner.translation[0]
+        m.pose.position.y = wMcorner.translation[1]
+        m.pose.position.z = wMcorner.translation[2]
+        m.pose.orientation.w = 1.0
+        m.scale.x = m.scale.y = m.scale.z = 0.03
+        m.color.r = 1.0
+        m.color.g = 0.5
+        m.color.a = 1.0
+        self._target_marker_pub.publish(m)
 
     def publish_reference(self):
         # Re-broadcast the latched TF so the MPC never loses the marker transform
@@ -324,6 +374,20 @@ class ArucoCornerPublisher(TrajectoryPublisherBase):
             self._msg_id += 1
             self.publisher_.publish(weighted_traj_point_to_mpc_msg(self._neutral_point))
             return
+
+        # Marker detected but user hasn't started the demo yet.
+        if not self._demo_started:
+            self.get_logger().info(
+                "ArUco marker detected. Call ~/next_corner to start the corner sequence.",
+                throttle_duration_sec=5.0,
+            )
+            self._publish_target_marker()
+            self._neutral_point.point.id = self._msg_id
+            self._msg_id += 1
+            self.publisher_.publish(weighted_traj_point_to_mpc_msg(self._neutral_point))
+            return
+
+        self._publish_target_marker()
 
         # In DONE phase: keep publishing neutral so the MPC buffer never empties.
         if self._phase == Phase.DONE:
