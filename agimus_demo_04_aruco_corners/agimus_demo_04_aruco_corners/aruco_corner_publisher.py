@@ -93,7 +93,7 @@ class ArucoCornerPublisher(TrajectoryPublisherBase):
         self.declare_parameter("dwell_time", 5.0)
         # Real-robot ArUco detection parameters
         self.declare_parameter("use_aruco_detection", False)
-        self.declare_parameter("target_marker_id", 0)
+        self.declare_parameter("target_marker_id", 20)
 
         marker_size = self.get_parameter("marker_size").value
         approach_z = self.get_parameter("approach_z_offset").value
@@ -219,11 +219,15 @@ class ArucoCornerPublisher(TrajectoryPublisherBase):
         if self._use_aruco_detection:
             self._tf_broadcaster = tf2_ros.TransformBroadcaster(self)
             self._last_aruco_tf: TransformStamped | None = None
+            self._marker_detected = False
             self.create_subscription(ArucoMarkers, "/aruco_markers", self._aruco_callback, 10)
             self.get_logger().info(
                 f"ArUco detection enabled — subscribing to /aruco_markers "
-                f"for marker ID {self._target_marker_id}."
+                f"for marker ID {self._target_marker_id}. "
+                f"Waiting for first detection before starting corner sequence."
             )
+        else:
+            self._marker_detected = True
 
         self._next_corner_srv = self.create_service(
             Trigger, "~/next_corner", self._next_corner_callback
@@ -259,6 +263,12 @@ class ArucoCornerPublisher(TrajectoryPublisherBase):
             t.transform.rotation = p.orientation
             self._last_aruco_tf = t
             self._tf_broadcaster.sendTransform(t)
+            if not self._marker_detected:
+                self._marker_detected = True
+                self.get_logger().info(
+                    f"First detection of marker ID {self._target_marker_id}. "
+                    f"Starting corner sequence."
+                )
             return
 
     # ------------------------------------------------------------------
@@ -302,6 +312,18 @@ class ArucoCornerPublisher(TrajectoryPublisherBase):
         if self._use_aruco_detection and self._last_aruco_tf is not None:
             self._last_aruco_tf.header.stamp = self.get_clock().now().to_msg()
             self._tf_broadcaster.sendTransform(self._last_aruco_tf)
+
+        # Waiting for first ArUco detection: publish neutral (zero EE weights) so the
+        # MPC can initialize without needing the aruco_marker TF frame.
+        if not self._marker_detected:
+            self.get_logger().info(
+                f"Waiting for ArUco marker ID {self._target_marker_id} to be detected...",
+                throttle_duration_sec=5.0,
+            )
+            self._neutral_point.point.id = self._msg_id
+            self._msg_id += 1
+            self.publisher_.publish(weighted_traj_point_to_mpc_msg(self._neutral_point))
+            return
 
         # In DONE phase: keep publishing neutral so the MPC buffer never empties.
         if self._phase == Phase.DONE:

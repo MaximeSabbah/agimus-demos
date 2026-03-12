@@ -55,7 +55,7 @@ terminal_model:
     costs:
     - name: state_reg
       update: true
-      weight: 1.0
+      weight: 0.1
       cost:
         class: CostModelResidual
         activation:

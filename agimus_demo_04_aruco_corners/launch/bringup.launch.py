@@ -192,6 +192,17 @@ def generate_launch_description():
 
     declared_arguments = [
         DeclareLaunchArgument(
+            "rviz_config_path",
+            default_value=PathJoinSubstitution(
+                [
+                    FindPackageShare("agimus_demo_04_aruco_corners"),
+                    "rviz",
+                    "preview.rviz",
+                ]
+            ),
+            description="Path to RViz configuration file.",
+        ),
+        DeclareLaunchArgument(
             "use_mpc_debugger",
             default_value="false",
             description="Launch the mpc_debugger_node for RViz prediction visualisation.",
