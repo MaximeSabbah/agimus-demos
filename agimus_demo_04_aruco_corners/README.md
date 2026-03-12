@@ -4,11 +4,11 @@ AGIMUS demo 04 ArUco corners
 > [!CAUTION]
 > This demo is **CPU intensive** and strongly relies on short MPC computation times. Make sure you **run this demo on a capable computer**. On the real robot, always keep the emergency stop within reach and ensure the workspace is clear before advancing to the next corner.
 
-This demo uses the [agimus_controller](https://github.com/agimus-project/agimus_controller) (MPC with Crocoddyl) to drive the Franka Panda's `fer_hand_tcp` frame to hover **2 cm above each of the 4 corners** of a fixed ArUco marker (DICT_4X4_50, 17.6 cm) in sequence. The user advances from corner to corner manually via a ROS 2 service call, giving full control of pacing.
+This demo uses the [agimus_controller](https://github.com/agimus-project/agimus_controller) (MPC with Crocoddyl) to drive the Franka Panda's `fer_hand_tcp` frame to hover **above each of the 4 corners** of a fixed ArUco marker (DICT_4X4_50, 17.6 cm) in sequence. The user triggers every motion step manually via a ROS 2 service call — including the very first move to corner 0 — giving full control of pacing.
 
 **In simulation** the marker pose is fixed via a static TF (`fer_link0 → aruco_marker`) set through launch arguments.
 
-**On the real robot** the marker is detected live by a wrist-mounted RealSense D435 camera using the `ros2_aruco` package. The `aruco_corner_publisher` node subscribes to the detections and broadcasts the `camera_color_optical_frame → aruco_marker` TF dynamically, latching the last known pose when the marker temporarily goes out of view.
+**On the real robot** the marker is detected live by a wrist-mounted RealSense D435 camera using the `ros2_aruco` and  `ros2_aruco_interfaces` packages. The `aruco_corner_publisher` node subscribes to the detections and broadcasts the `camera_color_optical_frame → aruco_marker` TF dynamically, latching the last known pose when the marker temporarily goes out of view.
 
 **Corner ordering** follows the OpenCV ArUco convention in the marker frame (X right, Y up, Z pointing out toward the robot):
 
@@ -18,7 +18,7 @@ Corner 1  top-right:    ( h,  h, z)
 Corner 2  bottom-right: ( h, -h, z)
 Corner 3  bottom-left:  (-h, -h, z)
 ```
-where `h = marker_size / 2 = 0.088 m` and `z = approach_z_offset = 0.02 m`.
+where `h = marker_size / 2 = 0.088 m` and `z = approach_z_offset = 0.10 m`.
 
 After all 4 corners are visited the robot returns to the Franka neutral configuration and holds there.
 
@@ -69,28 +69,38 @@ All pose values are in the `fer_link0` frame. The default `marker_pitch:=π` rot
 2. The `wait_for_non_zero_joints` node confirms the robot is ready.
 3. The MPC controller initialises (~2 s) and logs: `MPC is initialized and buffer has enough data`.
 4. The `aruco_corner_publisher` logs: `ArucoCornerPublisher ready. Will visit 4 corners …`
-5. The robot holds still at **corner 0** — it will not move until you issue a service call.
+5. An **orange sphere** appears in RViz at the corner 0 target position (computed from the static TF).
+6. The robot holds still at its current pose — it will **not** move to corner 0 until you issue a service call.
 
 ---
 
 ### Controlling the demo — advancing between corners
 
-The robot stays at each corner until you explicitly trigger the next one:
+The robot does **not** move at all on startup.  Every step — including the very first move to corner 0 — must be triggered explicitly:
 
 ```bash
 ros2 service call /aruco_corner_publisher/next_corner std_srvs/srv/Trigger
 ```
 
-Each call advances one step in the sequence:
-`CORNER_0 → CORNER_1 → CORNER_2 → CORNER_3 → NEUTRAL → (done, robot holds at neutral)`
+The first call starts the demo (moves to corner 0); subsequent calls advance one step at a time:
+
+`(idle) → CORNER_0 → CORNER_1 → CORNER_2 → CORNER_3 → NEUTRAL → (done, robot holds at neutral)`
 
 The service response reports the transition:
 ```
+# First call
+success: True
+message: Demo started. Moving to CORNER_0.
+
+# Subsequent calls
 success: True
 message: Advanced from CORNER_0 to CORNER_1.
 ```
 
 Calling the service when the sequence is complete returns `success: False`.
+
+> [!TIP]
+> Before calling the service for the first time, check the **orange sphere** in RViz — it shows exactly where the robot will move. Confirm the position looks correct above the expected corner before triggering motion.
 
 > [!TIP]
 > Set `dwell_time` to a positive number of seconds in
@@ -164,15 +174,22 @@ If the robot controller runs on a separate real-time computer, add:
 3. The MPC controller and `aruco_corner_publisher` start.
 4. The `aruco_corner_publisher` logs:
    ```
-   [aruco_corner_publisher]: ArUco detection enabled — subscribing to /aruco_markers for marker ID 0.
+   [aruco_corner_publisher]: ArUco detection enabled — subscribing to /aruco_markers for marker ID 20.
+   [aruco_corner_publisher]: Waiting for ArUco marker ID 20 to be detected...
    [aruco_corner_publisher]: ArucoCornerPublisher ready. Will visit 4 corners …
    ```
-5. The robot holds still — it will not move until you issue a service call.
+5. Once the marker is detected:
+   ```
+   [aruco_corner_publisher]: First detection of marker ID 20. Starting corner sequence.
+   [aruco_corner_publisher]: ArUco marker detected. Call ~/next_corner to start the corner sequence.
+   ```
+6. An **orange sphere** appears in RViz at the corner 0 target position. The camera color image and ArUco detection overlay are also displayed in RViz.
+7. The robot holds still — it will **not** move until you issue a service call.
 
 > [!IMPORTANT]
-> Before calling `next_corner`, confirm the marker is being detected (`ros2 topic echo /aruco_markers`) and that the predicted EE target in RViz is above the expected corner. The robot will move as soon as you call the service.
+> Before calling `next_corner`, confirm the **orange sphere** in RViz is above the expected corner.  The sphere updates live as the marker is re-detected.  The robot will move as soon as you call the service.
 
-**If using a different marker ID** (default is 0), edit `config/trajectory_weights_params.yaml` before building:
+**If using a different marker ID** (currently configured as 20 in `config/trajectory_weights_params.yaml`), edit it before building:
 
 ```yaml
 target_marker_id: <ID>
@@ -209,7 +226,7 @@ All tunable parameters are in the `config/` directory.
 | `w_q` | `[2.0]` | Joint position regularisation weight (broadcast to all 7 DOF). Increase to keep the arm closer to the reference configuration. |
 | `w_qdot` | `[8.0]` | Joint velocity regularisation weight. Increase to reduce speed. |
 | `w_robot_effort` | `[0.0012]` | Torque regularisation weight. Very small; mainly keeps the OCP well-conditioned. |
-| `approach_z_offset` | `0.02` | Distance (m) the EE hovers in front of the marker plane. Increase for a safer standoff on the real robot. |
+| `approach_z_offset` | `0.10` | Distance (m) the EE hovers in front of the marker plane. Increase for a safer standoff on the real robot. |
 | `marker_size` | `0.176` | Physical size of the ArUco marker in metres. Must match the real marker. |
 | `dwell_time` | `0.0` | Auto-advance interval in seconds. `0.0` = manual only (service call required). |
 
