@@ -13,9 +13,14 @@ Corner ordering follows the OpenCV ArUco convention in the marker frame
 
 The node uses the ResidualModelVisualServoing interface: it publishes the corner
 pose in the ArUco marker frame as the MpcInput EE target. The MPC controller reads
-the TF "fer_link0 → aruco_marker" (a static transform published by the launch file)
-and computes the world-frame target at each solve step:
+the TF "fer_link0 → aruco_marker" and computes the world-frame target at each solve
+step:
     wMtarget = TF(fer_link0 → aruco_marker) * oMcorner
+
+In simulation the TF is provided by a static_transform_publisher in the launch file.
+On the real robot (use_aruco_detection:=true), this node subscribes to /aruco_markers
+published by the ros2_aruco node and broadcasts the TF dynamically from detections,
+latching the last known pose when the marker is temporarily out of view.
 """
 
 import enum
@@ -23,7 +28,10 @@ import enum
 import numpy as np
 import pinocchio
 import rclpy
+from geometry_msgs.msg import TransformStamped
+from ros2_aruco_interfaces.msg import ArucoMarkers
 from std_srvs.srv import Trigger
+import tf2_ros
 
 from agimus_controller.trajectory import (
     TrajectoryPoint,
@@ -83,10 +91,15 @@ class ArucoCornerPublisher(TrajectoryPublisherBase):
         self.declare_parameter("marker_size", 0.176)
         self.declare_parameter("approach_z_offset", 0.02)
         self.declare_parameter("dwell_time", 5.0)
+        # Real-robot ArUco detection parameters
+        self.declare_parameter("use_aruco_detection", False)
+        self.declare_parameter("target_marker_id", 0)
 
         marker_size = self.get_parameter("marker_size").value
         approach_z = self.get_parameter("approach_z_offset").value
         self._dwell_time = self.get_parameter("dwell_time").value
+        self._use_aruco_detection = self.get_parameter("use_aruco_detection").value
+        self._target_marker_id = self.get_parameter("target_marker_id").value
 
         # Fetch the MPC timestep from agimus_controller_node
         params = get_params_from_node(self, "agimus_controller_node", ["ocp.dt"])
@@ -203,6 +216,15 @@ class ArucoCornerPublisher(TrajectoryPublisherBase):
             ),
         )
 
+        if self._use_aruco_detection:
+            self._tf_broadcaster = tf2_ros.TransformBroadcaster(self)
+            self._last_aruco_tf: TransformStamped | None = None
+            self.create_subscription(ArucoMarkers, "/aruco_markers", self._aruco_callback, 10)
+            self.get_logger().info(
+                f"ArUco detection enabled — subscribing to /aruco_markers "
+                f"for marker ID {self._target_marker_id}."
+            )
+
         self._next_corner_srv = self.create_service(
             Trigger, "~/next_corner", self._next_corner_callback
         )
@@ -212,6 +234,32 @@ class ArucoCornerPublisher(TrajectoryPublisherBase):
             f"Will visit 4 corners ({self._dwell_time:.1f} s each, or call "
             f"~/next_corner service to advance manually) then return to neutral."
         )
+
+    # ------------------------------------------------------------------
+    # ArUco detection → TF broadcast (real robot only)
+    # ------------------------------------------------------------------
+
+    def _aruco_callback(self, msg: ArucoMarkers):
+        """Broadcast camera_frame → aruco_marker TF from live detections.
+
+        The parent frame is taken from the message header (set by the aruco_node
+        to the camera optical frame). The last known pose is latched so the MPC
+        keeps a valid target even when the marker is momentarily out of view.
+        """
+        for i, marker_id in enumerate(msg.marker_ids):
+            if marker_id != self._target_marker_id:
+                continue
+            t = TransformStamped()
+            t.header = msg.header
+            t.child_frame_id = "aruco_marker"
+            p = msg.poses[i]
+            t.transform.translation.x = p.position.x
+            t.transform.translation.y = p.position.y
+            t.transform.translation.z = p.position.z
+            t.transform.rotation = p.orientation
+            self._last_aruco_tf = t
+            self._tf_broadcaster.sendTransform(t)
+            return
 
     # ------------------------------------------------------------------
     # State machine
@@ -249,6 +297,12 @@ class ArucoCornerPublisher(TrajectoryPublisherBase):
     # ------------------------------------------------------------------
 
     def publish_reference(self):
+        # Re-broadcast the latched TF so the MPC never loses the marker transform
+        # when it temporarily goes out of camera view.
+        if self._use_aruco_detection and self._last_aruco_tf is not None:
+            self._last_aruco_tf.header.stamp = self.get_clock().now().to_msg()
+            self._tf_broadcaster.sendTransform(self._last_aruco_tf)
+
         # In DONE phase: keep publishing neutral so the MPC buffer never empties.
         if self._phase == Phase.DONE:
             self._neutral_point.point.id = self._msg_id

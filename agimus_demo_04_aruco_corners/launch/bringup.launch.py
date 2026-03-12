@@ -16,7 +16,7 @@ facing the robot (Z axis pointing toward it).
 
 from launch import LaunchContext, LaunchDescription
 from launch.actions import DeclareLaunchArgument, OpaqueFunction, RegisterEventHandler
-from launch.conditions import IfCondition
+from launch.conditions import IfCondition, UnlessCondition
 from launch.event_handlers import OnProcessExit
 from launch.launch_description_entity import LaunchDescriptionEntity
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
@@ -35,6 +35,7 @@ def launch_setup(
     context: LaunchContext, *args, **kwargs
 ) -> list[LaunchDescriptionEntity]:
     use_mpc_debugger = LaunchConfiguration("use_mpc_debugger")
+    use_aruco_detection = LaunchConfiguration("use_aruco_detection")
 
     # ------------------------------------------------------------------ #
     # Franka robot (simulation or hardware) with Linear Feedback Controller
@@ -53,10 +54,7 @@ def launch_setup(
 
     # ------------------------------------------------------------------ #
     # Static TF: simulated ArUco marker pose (fer_link0 → aruco_marker)
-    #
-    # The marker is placed in front of the robot at a configurable position.
-    # Default: 0.5 m forward, 0.0 m lateral, 0.3 m up, facing the robot
-    # (pitch = pi rotates the marker so its Z axis points toward the robot).
+    # Only used in simulation; on the real robot the TF comes from ArUco detection.
     # ------------------------------------------------------------------ #
     aruco_marker_tf_node = Node(
         package="tf2_ros",
@@ -71,6 +69,29 @@ def launch_setup(
             "--pitch", LaunchConfiguration("marker_pitch"),
             "--yaw", LaunchConfiguration("marker_yaw"),
         ],
+        condition=UnlessCondition(use_aruco_detection),
+        output="screen",
+    )
+
+    # ------------------------------------------------------------------ #
+    # ArUco detection node (real robot only)
+    # Detects markers from the wrist-mounted RealSense D435.
+    # Publishes /aruco_markers with poses in camera_color_optical_frame.
+    # aruco_corner_publisher subscribes and re-broadcasts as TF.
+    # ------------------------------------------------------------------ #
+    aruco_node = Node(
+        package="ros2_aruco",
+        executable="aruco_node",
+        name="aruco_node",
+        parameters=[
+            {
+                "marker_size": 0.176,
+                "aruco_dictionary_id": "DICT_4X4_50",
+                "image_topic": "/camera/camera/color/image_raw",
+                "camera_info_topic": "/camera/camera/color/camera_info",
+            }
+        ],
+        condition=IfCondition(use_aruco_detection),
         output="screen",
     )
 
@@ -122,7 +143,11 @@ def launch_setup(
         package="agimus_demo_04_aruco_corners",
         executable="aruco_corner_publisher",
         name="aruco_corner_publisher",
-        parameters=[get_use_sim_time(), trajectory_weights_yaml],
+        parameters=[
+            get_use_sim_time(),
+            trajectory_weights_yaml,
+            {"use_aruco_detection": use_aruco_detection},
+        ],
         remappings=[("robot_description", "robot_description_with_collision")],
         output="screen",
     )
@@ -147,6 +172,7 @@ def launch_setup(
         franka_robot_launch,
         wait_for_non_zero_joints_node,
         aruco_marker_tf_node,
+        aruco_node,
         environment_publisher_node,
         mpc_debugger,
         RegisterEventHandler(
@@ -169,6 +195,15 @@ def generate_launch_description():
             "use_mpc_debugger",
             default_value="false",
             description="Launch the mpc_debugger_node for RViz prediction visualisation.",
+            choices=["true", "false"],
+        ),
+        DeclareLaunchArgument(
+            "use_aruco_detection",
+            default_value="false",
+            description=(
+                "Use live ArUco detection from the wrist D435 camera (real robot). "
+                "When false a static TF is used instead (simulation)."
+            ),
             choices=["true", "false"],
         ),
         # Marker position in the fer_link0 frame
